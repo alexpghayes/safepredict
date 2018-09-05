@@ -1,20 +1,19 @@
-#' Safe predictions from a linear model
+#' Safe predictions from a generalized linear model
 #'
-#' @param object An `lm` object returned from a call to [stats::lm()].
+#' @param object A `glm` object returned from a call to [stats::glm()].
 #' @param newdata A dataset as a [data.frame] object. In theory this should
-#'   work with any object accepted by the [stats::predict.lm()] `newdata`
+#'   work with any object accepted by the [stats::predict.glm()] `newdata`
 #'   argument that can be reasonably coerced into a tibble.
 #' @param type What kind of predictions to return. Options are:
-#'   - `"response"` (default): Standard predictions from linear regression.
-#'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
-#'   - `"pred_int"`: Predictions with accompanying prediction interval.
+#'   - `"response"` (default): Predictions on the response scale.
+#'   - `"link"`: Linear predictions before transformation.
+#'   - `"conf_int"`: TODO? separate interval argument?
 #' @param se_fit Logical indicating whether or not to also calculate standard
-#'   errors for the fit at each point. These standard errors do not include
-#'   the residual variance. Ignored when calculating a confidence or prediction
-#'   interval.
+#'   errors for the fit at each point. These standard errors do not including
+#'   the residual variance. That is, they can be used to calculate confidence
+#'   intervals but not prediction intervals.
 #' @param level A number between 0 and 1 to use as the confidence level to
-#'   use when calculating confidence and prediction intervals. Ignored
-#'   otherwise.
+#'   use when calculating confidence and prediction intervals.
 #' @param ... Unused. TODO: boilerplate for this.
 #'
 #' @details *What is the difference between confidence intervals and prediction
@@ -40,13 +39,13 @@
 #' safe_predict(fit, mt2, se_fit = TRUE)
 #' safe_predict(fit, mt2, type = "pred_int", level = 0.9)
 #'
-safe_predict.lm <- function(
+safe_predict.glm <- function(
   object,
   newdata,
   type = c(
     "response",
-    "conf_int",
-    "pred_int"
+    "link",
+    "conf_int"
   ),
   se_fit = FALSE,
   level = 0.95,
