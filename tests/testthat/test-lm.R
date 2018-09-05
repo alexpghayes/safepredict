@@ -1,5 +1,10 @@
 context("test-lm")
 
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
+library(modeltests)
+
+fit <- lm(hp ~ ., mtcars)
+
+test_that("TODO", {
+  check_predict_arguments(safe_predict.lm)
+  check_predict(safe_predict.lm)
 })
