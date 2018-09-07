@@ -31,3 +31,5 @@ validate_probability <- function(x) {
       call. = FALSE
     )
 }
+
+`%notin%` <- Negate(`%in%`)
