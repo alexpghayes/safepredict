@@ -1,5 +1,7 @@
+^LICENSE\.md$
 ^README\.Rmd$
 ^codecov\.yml$
 ^\.travis\.yml$
 ^safepredict\.Rproj$
 ^\.Rproj\.user$
+^man-roxygen$

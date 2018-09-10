@@ -19,5 +19,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Alex Hayes \email{alexpghayes@gmail.com}
 
+Other contributors:
+\itemize{
+  \item RStudio [copyright holder]
+}
+
 }
 \keyword{internal}

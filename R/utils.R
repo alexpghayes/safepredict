@@ -33,3 +33,17 @@ validate_probability <- function(x) {
 }
 
 `%notin%` <- Negate(`%in%`)
+
+
+#' Determine the positive class of a logistic regression fit with `glm`
+#'
+#' @param object TODO
+#'
+#' @return TODO
+#' @export
+positive_class <- function(object) {
+  stopifnot(inherits(object, "glm"))
+  stopifnot(family(object)$family == "binomial")
+
+  # TODO
+}

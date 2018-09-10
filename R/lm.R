@@ -1,33 +1,21 @@
 #' Safe predictions from a linear model
 #'
 #' @param object An `lm` object returned from a call to [stats::lm()].
-#' @param newdata A dataset as a [data.frame] object. In theory this should
-#'   work with any object accepted by the [stats::predict.lm()] `newdata`
-#'   argument that can be reasonably coerced into a tibble.
+#'
 #' @param type What kind of predictions to return. Options are:
 #'   - `"response"` (default): Standard predictions from linear regression.
 #'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
 #'   - `"pred_int"`: Predictions with accompanying prediction interval.
-#' @param se_fit Logical indicating whether or not to also calculate standard
-#'   errors for the fit at each point. These standard errors do not include
-#'   the residual variance. Ignored when calculating a confidence or prediction
-#'   interval.
-#' @param level A number between 0 and 1 to use as the confidence level to
-#'   use when calculating confidence and prediction intervals. Ignored
-#'   otherwise.
-#' @param ... Unused. TODO: boilerplate for this.
+#' @template boilerplate
 #'
-#' @details *What is the difference between confidence intervals and prediction
-#'   intervals*? TODO.
+#' @details Do not use on model objects that only subclass `lm`. This will result
+#'   in an error.
 #'
-#' @return A [tibble::tibble()] with one row for each row of `newdata`.
-#'   predictions for observations with missing data will be `NA`. Predictions
-#'   are contained in the
-#'   boilerplate about safe_predict_guarantees. ATTRIBUTE DETAILS.
+#' @section Confidence intervals versus predictions intervals:
+#'
+#' TODO
+#'
 #' @export
-#'
-#' @details Do not use on model objects that only subclass `lm`. Will error.
-#'
 #' @examples
 #'
 #' fit <- lm(hp ~ ., mtcars)
@@ -42,7 +30,7 @@
 #'
 safe_predict.lm <- function(
   object,
-  newdata,
+  new_data,
   type = c(
     "response",
     "conf_int",
@@ -54,16 +42,16 @@ safe_predict.lm <- function(
 
   ## input validation
 
-  if (length(class(object)) > 1)
-    stop(
-      paste0(
-        "The `safe_predict` lm method is not intended to be used with objects",
-        "that subclass lm.",
-        call. = FALSE
-      )
-    )
+  # if (length(class(object)) > 1)
+  #   stop(
+  #     paste0(
+  #       "The `safe_predict` lm method is not intended to be used with objects",
+  #       "that subclass lm.",
+  #       call. = FALSE
+  #     )
+  #   )
 
-  newdata <- safe_tibble(newdata)
+  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
   validate_logical(se_fit)
@@ -77,37 +65,37 @@ safe_predict.lm <- function(
   # are retained in the predictions and join on these rownames
 
   if (type == "response")
-    pred <- predict_lm_response(object, newdata, se_fit)
+    pred <- predict_lm_response(object, new_data, se_fit)
   else
-    pred <- predict_lm_interval(object, newdata, type, level)
+    pred <- predict_lm_interval(object, new_data, type, level)
 
   pred
 }
 
-predict_lm_response <- function(object, newdata, se_fit) {
+predict_lm_response <- function(object, new_data, se_fit) {
   if (!se_fit) {
-    pred <- tibble(.pred = predict(object, newdata, na.action = na.pass))
+    pred <- tibble(.pred = predict(object, new_data, na.action = na.pass))
   } else{
-    pred_list <- predict(object, newdata, se.fit = TRUE, na.action = na.pass)
+    pred_list <- predict(object, new_data, se.fit = TRUE, na.action = na.pass)
     pred <- tibble(.pred = pred_list$fit, .pred_std_error = pred_list$se.fit)
   }
 
   pred
 }
 
-predict_lm_interval <- function(object, newdata, type, level) {
+predict_lm_interval <- function(object, new_data, type, level) {
 
   interval <- if (type == "conf_int") "confidence" else "prediction"
 
   pred_mat <- predict(
     object,
-    newdata,
+    new_data,
     interval = interval,
     level = level,
     na.action = na.pass
   )
 
-  pred <-rename(
+  pred <- dplyr::rename(
     as_tibble(pred_mat),
     ".pred" = "fit",
     ".pred_lower" = "lwr",
