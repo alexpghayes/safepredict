@@ -60,7 +60,7 @@ safe_predict(fit, new_data = test, type = "prob")
 #> 10  0.689    0.311
 ```
 
-or can jump start to hard class decisions
+or can jump straight to hard class decisions
 
 ``` r
 safe_predict(fit, new_data = test, type = "class")
@@ -121,12 +121,3 @@ Conventions
 -----------
 
 `safepredict` is based on a conventions document that is currently in progress and private. Once conventions are finalized, they'll appear here.
-
-### Predictions by `type`
-
--   "response": numeric predictions in `.pred`
--   "class": hard class predictions in `.pred_{factor level}`
--   "prob": class probabilities in `.pred_{factor level}`
--   "link": glm linear predictor in `.pred`
--   "conf\_int": confidence intervals in `.pred`, `.pred_lower` and `.pred_upper`
--   "pred\_int": prediction intervals in `.pred`, `.pred_lower` and `.pred_upper`

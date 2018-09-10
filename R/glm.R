@@ -62,7 +62,10 @@ safe_predict.glm <- function(
   validate_probability(threshold)
 
   if (se_fit && type != "link")
-    stop("Standard errors cannot be calculated unless `type = link`.")
+    stop(
+      "Standard errors cannot be calculated unless `type = link`.",
+      call. = FALSE
+    )
 
   fam <- family(object)$family
   all <- c("link", "conf_int")
@@ -84,7 +87,7 @@ safe_predict.glm <- function(
   if (type %notin% allowed_types)
     stop(
       paste0("For GLMs with family `", fam, "`, `type` must be one of: "),
-      paste(allowed_types, collapse = ", "), ".",
+      paste(allowed_types, collapse = ", "), ". You entered: ", type, ".",
       call. = FALSE
     )
 
