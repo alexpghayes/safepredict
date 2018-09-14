@@ -1,26 +1,13 @@
-#' Safe predictions from a linear model
+#' Safe predictions for cross-validated glmnet objects
 #'
-#' @param object An `lm` object returned from a call to [stats::lm()].
+#' @param object TODO
+#' @param new_data TODO
+#' @param type TODO
+#' @param params TODO
 #'
-#' @param type What kind of predictions to return. Options are:
-#'   - `"response"` (default): Standard predictions from linear regression.
-#'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
-#'   - `"pred_int"`: Predictions with accompanying prediction interval.
 #' @template boilerplate
 #'
-#' @details Do not use on model objects that only subclass `lm`. This will result
-#'   in an error.
-#'
-#' @section Confidence intervals versus predictions intervals:
-#'
-#' TODO
-#'
 #' @export
-#' @examples
-#'
-#'
-#'
-#'
 safe_predict.cv.glmnet <- function(
   object,
   new_data,
@@ -71,10 +58,10 @@ safe_predict.cv.glmnet <- function(
   ## type x family validation: binomial shouldn't do "response", etc
 
   if (family %in% c("binomial", "multinomial") &&
-        type %notin% c("prob", "class"))
+        type %notin% c("prob", "class", "param_pred"))
     stop(
-      "`type` must be \"prob\" or \"class\" for binomial and multinomial",
-      "families.", call. = FALSE
+      "`type` must be \"prob\", \"class\" or \"param_pred\" for binomial",
+      "and multinomial families.", call. = FALSE
     )
 
   if (type == "link")
@@ -132,7 +119,7 @@ predict_cv_glmnet_mgaussian <- function(object, new_data, type, params) {
 
   pred_list <- apply(pred_array, 3, as_tibble)
   pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
-  bind_rows(pred_list)
+  dplyr::bind_rows(pred_list)
 }
 
 predict_cv_glmnet_binomial <- function(
@@ -154,7 +141,7 @@ predict_cv_glmnet_binomial <- function(
   # interface limitations
   pred_list <- apply(pred_mat, 2, binomial_helper, levels, "prob")
   pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
-  bind_rows(pred_list)
+  dplyr::bind_rows(pred_list)
 
 }
 
@@ -172,5 +159,5 @@ predict_cv_glmnet_multinomial <- function(object, new_data, type, params) {
   # interface limitations
   pred_list <- apply(pred_array, 3, multinomial_helper, levels, "prob")
   pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
-  bind_rows(pred_list)
+  dplyr::bind_rows(pred_list)
 }
