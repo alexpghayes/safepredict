@@ -50,6 +50,8 @@ safe_predict(fit, test, params = 0.1)
 
 Now we need to keep track of the observation that a prediction belongs to, and also $\lambda$, so we add two new columns: `id` and `lambda`.
 
+Note that missing of predictions can vary with `lambda`, as fewer columns are required to predict from sparse models.
+
 ```{r}
 grid <- tibble(lambda = 1:10)
 
