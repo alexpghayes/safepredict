@@ -166,12 +166,7 @@ predict_glm_response <- function(object, new_data) {
   )
 }
 
-#' @importFrom rlang ":="
 predict_glm_binomial <- function(object, new_data, type, threshold) {
-
-  # special case handler for logistic regression:
-  #   - class probabilities
-  #   - hard predictions
 
   mf <- model.frame(object)
   mr <- model.response(mf)
@@ -179,22 +174,16 @@ predict_glm_binomial <- function(object, new_data, type, threshold) {
   if (!is.factor(mr))
     stop("safe_predict only works when outcome has been specified as a factor")
 
-  lvl <- levels(mr)  # first element is reference level
+  lvls <- levels(mr)  # first element is reference level
   # second element is "positive" level
 
   raw <- predict(object, new_data, na.action = na.pass, type = "response")
 
-  if (type == "prob") {
-    pred <- tibble(
-      !!paste0(".pred_", lvl[1]) := 1 - raw,
-      !!paste0(".pred_", lvl[2]) := raw
-    )
-  } else if (type == "class") {
-    pred <- tibble(
-      .pred_class = as.factor(dplyr::if_else(raw > threshold, lvl[2], lvl[1]))
-    )
-  }
-
-  pred
+  binomial_helper(
+    raw = raw,
+    levels = lvls,
+    type = type,
+    threshold = threshold
+  )
 }
 
