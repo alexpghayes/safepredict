@@ -80,7 +80,7 @@ safe_predict.cv.glmnet <- function(
   if (type == "link")
     predict_cv_glmnet_link(object, new_data, params)
   else if (family == "gaussian")
-    predict_cv_glmnet_response(object, new_data, type, params)
+    predict_cv_glmnet_numeric(object, new_data, type, params)
   else if (family == "mgaussian")
     predict_cv_glmnet_mgaussian(object, new_data, type, params)
   else if (family == "binomial")
@@ -88,7 +88,7 @@ safe_predict.cv.glmnet <- function(
   else if (family == "multinomial")
     predict_cv_glmnet_multinomial(object, new_data, type, params)
   else if (family == "poisson")
-    predict_cv_glmnet_response(object, new_data, type, params)
+    predict_cv_glmnet_numeric(object, new_data, type, params)
   else
     stop("Family: ", family, " not yet supported.", call. = FALSE)
 }
@@ -99,10 +99,9 @@ predict_cv_glmnet_link <- function(object, new_data, params) {
   as_pred_tibble(pred_mat)
 }
 
-predict_cv_glmnet_response <- function(object, new_data, type, params) {
+predict_cv_glmnet_numeric <- function(object, new_data, type, params) {
 
-  if (type == "param_pred")
-    params <- params$lambda
+  params <- if (type == "param_pred") params$lambda else params
 
   pred_mat <- predict(object, new_data, type = "response", s = params)
 
@@ -114,10 +113,14 @@ predict_cv_glmnet_response <- function(object, new_data, type, params) {
   tidyr::gather(untidy, lambda, .pred, -id)
 }
 
+add_id_and_lambda <- function(data, lambda) {
+  data <- tibble::add_column(data, lambda = lambda, .before = TRUE)
+  add_id_column(data)
+}
+
 predict_cv_glmnet_mgaussian <- function(object, new_data, type, params) {
 
-  if (type == "param_pred")
-    params <- params$lambda
+  params <- if (type == "param_pred") params$lambda else params
 
   pred_array <- predict(object, new_data, s = params)
 
@@ -125,11 +128,6 @@ predict_cv_glmnet_mgaussian <- function(object, new_data, type, params) {
     pred_mat <- pred_array[, , 1]
     response_names <- paste0(".pred_", colnames(pred_mat))
     return(as_pred_tibble(pred_mat, response_names))
-  }
-
-  add_id_and_lambda <- function(data, lambda) {
-    data <- tibble::add_column(data, lambda = lambda, .before = TRUE)
-    add_id_column(data)
   }
 
   pred_list <- apply(pred_array, 3, as_tibble)
@@ -141,28 +139,38 @@ predict_cv_glmnet_binomial <- function(
   object,
   new_data,
   type,
-  lambda,
+  params,
   threshold) {
 
-  pred_mat <- predict(object, new_data, type = "response", s = lambda)
-  classes <- object$glmnet.fit$classnames
+  params <- if (type == "param_pred") params$lambda else params
 
-  binomial_helper(
-    raw = as.vector(pred_mat),
-    levels = classes,
-    type = type,
-    threshold = threshold
-  )
+  pred_mat <- predict(object, new_data, type = "response", s = params)
+  levels <- object$glmnet.fit$classnames
+
+  if (type != "param_pred")
+    return(binomial_helper(pred_mat, levels, type, threshold))
+
+  # forcing class probs here rather than factor predictions due to
+  # interface limitations
+  pred_list <- apply(pred_mat, 2, binomial_helper, levels, "prob")
+  pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
+  bind_rows(pred_list)
+
 }
 
-predict_cv_glmnet_multinomial <- function(object, new_data, type, lambda) {
+predict_cv_glmnet_multinomial <- function(object, new_data, type, params) {
 
-  pred_array <- predict(object, new_data, type = "response", s = lambda)
-  pred_mat <- pred_array[, , 1]
+  params <- if (type == "param_pred") params$lambda else params
 
-  multinomial_helper(
-    raw = pred_mat,
-    levels = object$glmnet.fit$classnames,
-    type = type
-  )
+  pred_array <- predict(object, new_data, type = "response", s = params)
+  levels <- object$glmnet.fit$classnames
+
+  if (type != "param_pred")
+    return(multinomial_helper(pred_mat[, , 1], levels, type))
+
+  # forcing class probs here rather than factor predictions due to
+  # interface limitations
+  pred_list <- apply(pred_array, 3, multinomial_helper, levels, "prob")
+  pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
+  bind_rows(pred_list)
 }

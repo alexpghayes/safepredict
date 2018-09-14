@@ -44,6 +44,7 @@ fit2=cv.glmnet(x2,g2,family="binomial")
 predict_cv_glmnet_binomial(fit2, x2, "class", "lambda.1se", 0.5)
 predict_cv_glmnet_binomial(fit2, x2, "prob", "lambda.1se", 0.5)
 
+predict_cv_glmnet_binomial(fit2, x2, "param_pred", grid)
 
 
 #multinomial
@@ -56,6 +57,11 @@ predict_cv_glmnet_multinomial(fit3, x, "prob", "lambda.1se")
 predict_cv_glmnet_multinomial(fit3, x, "class", "lambda.1se")
 predict_cv_glmnet_multinomial(fit3a, x, "prob", "lambda.1se")
 predict_cv_glmnet_multinomial(fit3a, x, "class", "lambda.1se")
+
+
+predict_cv_glmnet_multinomial(fit3a, x, "class", 1)
+
+predict_cv_glmnet_multinomial(fit3a, x, "param_pred", grid)
 
 
 

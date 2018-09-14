@@ -70,6 +70,7 @@ binomial_helper <- function(
 
   type <- match.arg(type)
   validate_probability(threshold)
+  raw <- as.vector(raw)
 
   if (type == "prob") {
     tibble(
