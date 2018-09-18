@@ -29,3 +29,12 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0
 VignetteBuilder: knitr
+Collate: 
+    'earth.R'
+    'gam.R'
+    'glm.R'
+    'glmnet.R'
+    'lm.R'
+    'utils.R'
+    'ranger.R'
+    'safepredict-package.R'
