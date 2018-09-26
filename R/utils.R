@@ -15,6 +15,9 @@ as_pred_tibble <- function(table_like, names = ".pred") {
   if (is.matrix(table_like))
     colnames(table_like) <- names
 
+  if (is.null(names))
+    as_tibble(table_like)
+
   purrr::set_names(as_tibble(table_like), names)
 }
 

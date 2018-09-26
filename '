@@ -1,0 +1,17 @@
+Start playing with ranger objects
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Tue Sep 18 00:04:03 2018 -0500
+#
+# On branch master
+# Your branch is ahead of 'origin/master' by 1 commit.
+#   (use "git push" to publish your local commits)
+#
+# Changes to be committed:
+#	modified:   DESCRIPTION
+#	new file:   R/earth.R
+#	new file:   R/gam.R
+#	new file:   R/ranger.R
+#	modified:   R/utils.R
+#
