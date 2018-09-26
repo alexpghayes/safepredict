@@ -93,12 +93,6 @@ binomial_helper <- function(
   }
 }
 
-
-prob_to_class_2 <- function(x, object) {
-  x <- ifelse(x >= 0.5, object$lvl[2], object$lvl[1])
-  unname(x)
-}
-
 # TODO: make this more informative
 no_method_for_type_error <- function()
   stop("There's no method for the given object and type.")
@@ -139,4 +133,22 @@ maybe_multivariate <- function(results, object) {
   else
     results <- unname(results[, 1])
   results
+}
+
+pred_se_to_confint <- function(pred_se, level, se_fit) {
+  crit_val <- qnorm(1 - level / 2)
+
+  pred <- dplyr::mutate(
+    pred_se,
+    .pred_lower = fit - crit_val * .std_error,
+    .pred_upper = fit + crit_val * .std_error
+  )
+
+  if (!se_fit)
+    pred <- dplyr::select(pred, -.std_error)
+
+  attr(pred, "interval") <- "confidence"
+  attr(pred, "level") <- level
+
+  pred
 }

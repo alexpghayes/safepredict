@@ -1,4 +1,4 @@
-safe_predict.mars <- function(
+safe_predict.keras <- function(
   object,
   new_data,
   type = c(

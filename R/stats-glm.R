@@ -94,7 +94,7 @@ safe_predict.glm <- function(
   if (type == "link")
     predict_glm_link(object, new_data, se_fit)
   else if (type == "conf_int")
-    predict_glm_confint(object, new_data, level)
+    predict_glm_confint(object, new_data, level, se_fit)
   else if (type == "response")
     predict_glm_response(object, new_data)
   else if (type %in% c("class", "prob") && fam == "binomial")
@@ -127,36 +127,15 @@ predict_glm_link <- function(object, new_data, se_fit) {
   pred
 }
 
-predict_glm_confint <- function(object, new_data, level) {
+predict_glm_confint <- function(object, new_data, level, se_fit) {
 
   # NOTE: this calculates a confidence interval for the linear predictors,
   # then applies the inverse link to transform this confidence interval to
   # response scale.
 
-  pred_list <- predict(
-    object,
-    new_data,
-    type = "link",
-    se.fit = TRUE,
-    na.action = na.pass
-  )
-
-  crit_val <- qnorm(1 - level / 2)
-
-  pred <- with(
-    pred_list,
-    tibble(
-      .pred = fit,
-      .pred_lower = fit - crit_val * se.fit,
-      .pred_upper = fit + crit_val * se.fit
-    )
-  )
-
+  pred_se <- predict_glm_link(object, new_data, se_fit = TRUE)
+  pred <- pred_se_to_confint(pred_se, level, se_fit)
   pred <- dplyr::mutate_all(pred, object$family$linkinv)
-
-  attr(pred, "interval") <- "confidence"
-  attr(pred, "level") <- level
-
   pred
 }
 
