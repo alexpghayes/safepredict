@@ -47,7 +47,7 @@ safe_predict.glm <- function(
     "class",
     "prob"
   ),
-  se_fit = FALSE,
+  std_error = FALSE,
   level = 0.95,
   threshold = 0.5,
   ...) {
@@ -57,54 +57,46 @@ safe_predict.glm <- function(
   new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
-  validate_logical(se_fit)
+  validate_logical(std_error)
   validate_probability(level)
   validate_probability(threshold)
 
-  if (se_fit && type != "link")
+  fam <- family(object)$family
+
+  type_by_family <- tibble::tribble(
+    ~ param, ~ type,
+    "binomial", c("class", "prob"),
+    "gaussian", "response",
+    "Gamma", "response",
+    "inverse.gaussian", "response",
+    "poisson", "response",
+    "quasi", "response",
+    "quasibinomial", c("class", "prob"),
+    "quasipoisson", "response"
+  )
+
+  check_type_by_param(type_by_family, type, fam, all = c("link", "conf_int"))
+
+  if (std_error && type != "link")
     stop(
       "Standard errors cannot be calculated unless `type = link`.",
       call. = FALSE
     )
 
-  fam <- family(object)$family
-  all <- c("link", "conf_int")
-
-  type_by_family <- list(
-    binomial = c("class", "prob"),
-    gaussian = "response",
-    Gamma = "response",
-    inv_gaussian = "response",
-    poisson = "response",
-    quasi = "response",
-    quasibinomial = c("class", "prob"),
-    quasipoisson = "response"
-  )
-
-  type_by_family <- purrr::map(type_by_family, ~c(all, .x))
-  allowed_types <- type_by_family[[fam]]
-
-  if (type %notin% allowed_types)
-    stop(
-      paste0("For GLMs with family `", fam, "`, `type` must be one of: "),
-      paste(allowed_types, collapse = ", "), ". You entered: ", type, ".",
-      call. = FALSE
-    )
-
   if (type == "link")
-    predict_glm_link(object, new_data, se_fit)
+    predict_glm_link(object, new_data, std_error)
   else if (type == "conf_int")
-    predict_glm_confint(object, new_data, level, se_fit)
+    predict_glm_confint(object, new_data, level, std_error)
   else if (type == "response")
     predict_glm_response(object, new_data)
   else if (type %in% c("class", "prob") && fam == "binomial")
     predict_glm_binomial(object, new_data, type, threshold)
   else
-    stop("This shouldn't happen.")
+    could_not_dispatch_error()
 }
 
-predict_glm_link <- function(object, new_data, se_fit) {
-  if (!se_fit) {
+predict_glm_link <- function(object, new_data, std_error) {
+  if (!std_error) {
     pred <- tibble(
       .pred = predict(object, new_data, na.action = na.pass, type = "link")
     )
@@ -127,14 +119,14 @@ predict_glm_link <- function(object, new_data, se_fit) {
   pred
 }
 
-predict_glm_confint <- function(object, new_data, level, se_fit) {
+predict_glm_confint <- function(object, new_data, level, std_error) {
 
   # NOTE: this calculates a confidence interval for the linear predictors,
   # then applies the inverse link to transform this confidence interval to
   # response scale.
 
-  pred_se <- predict_glm_link(object, new_data, se_fit = TRUE)
-  pred <- pred_se_to_confint(pred_se, level, se_fit)
+  pred_se <- predict_glm_link(object, new_data, std_error = TRUE)
+  pred <- pred_se_to_confint(pred_se, level, std_error)
   pred <- dplyr::mutate_all(pred, object$family$linkinv)
   pred
 }
@@ -153,8 +145,8 @@ predict_glm_binomial <- function(object, new_data, type, threshold) {
   if (!is.factor(mr))
     stop("safe_predict only works when outcome has been specified as a factor")
 
-  lvls <- levels(mr)  # first element is reference level
-  # second element is "positive" level
+  # first element is reference level, second element is "positive" level
+  lvls <- levels(mr)
 
   raw <- predict(object, new_data, na.action = na.pass, type = "response")
 

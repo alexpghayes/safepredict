@@ -25,7 +25,7 @@
 #' mt2 <- mtcars
 #' diag(mt2) <- NA  # overly aggressive
 #'
-#' safe_predict(fit, mt2, se_fit = TRUE)
+#' safe_predict(fit, mt2, std_error = TRUE)
 #' safe_predict(fit, mt2, type = "pred_int", level = 0.9)
 #'
 safe_predict.lm <- function(
@@ -36,25 +36,16 @@ safe_predict.lm <- function(
     "conf_int",
     "pred_int"
   ),
-  se_fit = FALSE,
+  std_error = FALSE,
   level = 0.95,
   ...) {
 
   ## input validation
 
-  # if (length(class(object)) > 1)
-  #   stop(
-  #     paste0(
-  #       "The `safe_predict` lm method is not intended to be used with objects",
-  #       "that subclass lm.",
-  #       call. = FALSE
-  #     )
-  #   )
-
   new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
-  validate_logical(se_fit)
+  validate_logical(std_error)
   validate_probability(level)
 
   ## dispatch on type
@@ -65,15 +56,15 @@ safe_predict.lm <- function(
   # are retained in the predictions and join on these rownames
 
   if (type == "response")
-    pred <- predict_lm_response(object, new_data, se_fit)
+    pred <- predict_lm_response(object, new_data, std_error)
   else
     pred <- predict_lm_interval(object, new_data, type, level)
 
   pred
 }
 
-predict_lm_response <- function(object, new_data, se_fit) {
-  if (!se_fit) {
+predict_lm_response <- function(object, new_data, std_error) {
+  if (!std_error) {
     pred <- tibble(.pred = predict(object, new_data, na.action = na.pass))
   } else{
     pred_list <- predict(object, new_data, se.fit = TRUE, na.action = na.pass)

@@ -4,7 +4,8 @@
 \alias{safe_predict}
 \title{Safely predict from a model object}
 \usage{
-safe_predict(object, new_data, ...)
+safe_predict(object, new_data, type = NULL, opts = list(),
+  level = 0.95, std_error = FALSE, ...)
 }
 \arguments{
 \item{object}{TODO}

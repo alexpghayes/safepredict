@@ -1,22 +1,16 @@
-# TODO: how to specify the penalty value
-
 #' Safe predictions for glmnet objects
 #'
 #' @param object TODO
 #' @param new_data TODO
 #' @param type TODO
-#' @param penalty TODO
+#' @param penalty Unlike [safe_predict.cv.glmnet()], here you can explicitly
+#'   set a value of `penalty`. In the CV version you have to pick one of the
+#'   cross-validated versions of the penalty.
 #'
 #' @template boilerplate
 #'
 #' @export
 #'
-
-
-# NOTE: to explicitly specify the value of the penalty, use multi_predict!
-# should multi-predict also accept new_data augmented with hyperparameter
-# columns for individualized prediction stuffs?
-
 safe_predict.glmnet <- function(
   object,
   new_data,
@@ -26,7 +20,8 @@ safe_predict.glmnet <- function(
     "prob",
     "link"
   ),
-  penalty = NULL) {
+  penalty = NULL,
+  threshold = 0.5) {
 
   ## input validation
 
@@ -46,43 +41,52 @@ safe_predict.glmnet <- function(
   family <- object$call$family
   family <- if (is.null(family)) "gaussian" else family
 
-  ## type x family validation: binomial shouldn't do "response", etc
+  # a more sane default for classification problems
+  if (family %in% c("binomial", "multinomial") && type == "response")
+    type <- "class"
 
-  if (family %in% c("binomial", "multinomial") &&
-      type %notin% c("prob", "class", "param_pred"))
-    stop(
-      "`type` must be \"prob\", \"class\" or \"param_pred\" for binomial",
-      "and multinomial families.", call. = FALSE
-    )
+  type_by_param <- tibble::tribble(
+    ~ param, ~ type,
+    "binomial", c("class", "prob"),
+    "multinomial", c("class", "prob"),
+    "gaussian", "response",
+    "mgaussian", "response",
+    "poisson", "response"
+  )
+
+  check_type_by_param(type_by_param, type, family, all = "link")
 
   if (type == "link")
     predict_glmnet_link(object, new_data, penalty)
   else if (family == "gaussian")
-    predict_glmnet_numeric(object, new_data, type, penalty)
+    predict_glmnet_numeric(object, new_data, penalty)
   else if (family == "mgaussian")
-    predict_glmnet_mgaussian(object, new_data, type, penalty)
+    predict_glmnet_mgaussian(object, new_data, penalty)
   else if (family == "binomial")
-    predict_glmnet_binomial(object, new_data, type, penalty)
+    predict_glmnet_binomial(object, new_data, type, penalty, threshold)
   else if (family == "multinomial")
     predict_glmnet_multinomial(object, new_data, type, penalty)
   else if (family == "poisson")
-    predict_glmnet_numeric(object, new_data, type, penalty)
+    predict_glmnet_numeric(object, new_data, penalty)
   else
-    stop("Family: ", family, " not yet supported.", call. = FALSE)
+    could_not_dispatch_error()
 }
 
 
 predict_glmnet_link <- function(object, new_data, penalty) {
+  # TODO: fix for mgaussian and multinomial families
+  # (breaks due to multivariate outcome)
+
   pred_mat <- predict(object, new_data, type = "link", s = penalty)
   as_pred_tibble(pred_mat)
 }
 
-predict_glmnet_numeric <- function(object, new_data, type, penalty) {
+predict_glmnet_numeric <- function(object, new_data, penalty) {
   pred_mat <- predict(object, new_data, type = "response", s = penalty)
   as_pred_tibble(pred_mat)
 }
 
-predict_glmnet_mgaussian <- function(object, new_data, type, penalty) {
+predict_glmnet_mgaussian <- function(object, new_data, penalty) {
   pred_array <- predict(object, new_data, s = penalty)
   pred_mat <- pred_array[, , 1]
   response_names <- paste0(".pred_", colnames(pred_mat))
@@ -96,14 +100,14 @@ predict_glmnet_binomial <- function(
   penalty,
   threshold) {
   pred_mat <- predict(object, new_data, type = "response", s = penalty)
-  levels <- object$glmnet.fit$classnames
+  levels <- object$classnames
   binomial_helper(pred_mat, levels, type, threshold)
 }
 
 predict_glmnet_multinomial <- function(object, new_data, type, penalty) {
   pred_array <- predict(object, new_data, type = "response", s = penalty)
-  levels <- object$glmnet.fit$classnames
-  multinomial_helper(pred_mat[, , 1], levels, type)
+  levels <- object$classnames
+  multinomial_helper(pred_array[, , 1], levels, type)
 }
 
 

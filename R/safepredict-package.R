@@ -36,8 +36,11 @@ safe_predict <- function(
     UseMethod("safe_predict")
 }
 
-safe_predict.default <- function(...) {
-  stop("I don't know about type = '", "'", type, call. = FALSE)
+safe_predict.default <- function(object, ...) {
+  stop(
+    "No safe_predict method has been defined for objects of class",
+    class(object)[1], call. = FALSE
+  )
 }
 
 

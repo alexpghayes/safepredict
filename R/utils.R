@@ -94,7 +94,7 @@ binomial_helper <- function(
 }
 
 # TODO: make this more informative
-no_method_for_type_error <- function()
+could_not_dispatch_error <- function()
   stop("There's no method for the given object and type.")
 
 multinomial_helper <- function(
@@ -109,7 +109,8 @@ multinomial_helper <- function(
   if (type == "prob")
     return(probs)
 
-  argmax_idx <- apply(raw, 1, which.max)
+  # use as.numeric to coerce integer() elements of the resulting list to NA
+  argmax_idx <- as.numeric(apply(raw, 1, which.max))
   tibble(.pred_class = as.factor(levels[argmax_idx]))
 }
 
@@ -151,4 +152,23 @@ pred_se_to_confint <- function(pred_se, level, se_fit) {
   attr(pred, "level") <- level
 
   pred
+}
+
+
+# two columns: param, type
+# param needs to be a character vector with a single element
+# type is a character vector of all allowed types, many elements okay
+
+check_type_by_param <- function(type_param_table, type, param, all = NULL) {
+
+  allowed_types <- dplyr::filter(type_param_table, param == !!param)
+  allowed_types <- dplyr::pull(allowed_types)[[1]]
+  allowed_types <- c(allowed_types, all)
+
+  if (type %notin% allowed_types)
+    stop(
+      "`type` must be one of the following: ",
+      paste(allowed_types, collapse = ", "), ". You entered: ", type, ".",
+      call. = FALSE
+    )
 }
