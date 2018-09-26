@@ -17,24 +17,16 @@ Depends:
 Imports: 
     dplyr,
     purrr,
-    tibble,
-    rlang
+    rlang,
+    tibble
 Suggests: 
     covr,
-    testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
+VignetteBuilder: 
+    knitr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0
-VignetteBuilder: knitr
-Collate: 
-    'earth.R'
-    'gam.R'
-    'glm.R'
-    'glmnet.R'
-    'lm.R'
-    'utils.R'
-    'ranger.R'
-    'safepredict-package.R'

@@ -1,5 +1,30 @@
+safe_predict.xgb.Booster <- function(
+  object,
+  new_data,
+  type = c(
+    "response",
+    "class",
+    "prob"
+  ),
+  ...) {
 
-#' @importFrom stats binomial
+  new_data <- safe_tibble(new_data)
+  type <- match.arg(type)
+
+  ## TODO: dispatch on type
+  if (type == "response")
+    predict_xgb_response(object, new_data)
+  else if (type == "class")
+    predict_xgb_class(object, new_data)
+  else if (type == "prob")
+    predict_xgb_prob(object, new_data)
+  else
+    no_method_for_type_error()
+
+  pred
+}
+
+
 xgb_pred <- function(object, newdata, ...) {
   if (!inherits(newdata, "xgb.DMatrix")) {
     newdata <- as.matrix(newdata)
@@ -18,66 +43,13 @@ xgb_pred <- function(object, newdata, ...) {
   x
 }
 
-#' @importFrom purrr map_df
-#' @export
-multi_predict._xgb.Booster <-
-  function(object, new_data, type = NULL, trees = NULL, ...) {
-    if (is.null(trees))
-      trees <- object$fit$nIter
-    trees <- sort(trees)
-
-    if (is.null(type)) {
-      if (object$spec$mode == "classification")
-        type <- "class"
-      else
-        type <- "numeric"
-    }
-
-    res <-
-      map_df(trees, xgb_by_tree, object = object,
-             new_data = new_data, type = type, ...)
-    res <- arrange(res, .row, trees)
-    res <- split(res[, -1], res$.row)
-    names(res) <- NULL
-    tibble(.pred = res)
-  }
-
-xgb_by_tree <- function(tree, object, new_data, type, ...) {
-  pred <- xgb_pred(object$fit, newdata = new_data, ntreelimit = tree)
-
-  # switch based on prediction type
-  if(object$spec$mode == "regression") {
-    pred <- tibble(.pred = pred)
-    nms <- names(pred)
-  } else {
-    if (type == "class") {
-      pred <- boost_tree_xgboost_data$classes$post(pred, object)
-      pred <- tibble(.pred = factor(pred, levels = object$lvl))
-    } else {
-      pred <- boost_tree_xgboost_data$prob$post(pred, object)
-      pred <- as_tibble(pred)
-      names(pred) <- paste0(".pred_", names(pred))
-    }
-    nms <- names(pred)
-  }
-  pred[["trees"]] <- tree
-  pred[[".row"]] <- 1:nrow(new_data)
-  pred[, c(".row", "trees", nms)]
+predict_xgb_response <- function(object, new_data, ...) {
+  pred <- predict(object, newdata = new_data)
 }
 
-,
-pred = list(
-  pre = NULL,
-  post = NULL,
-  func = c(fun = "xgb_pred"),
-  args =
-    list(
-      object = quote(object$fit),
-      newdata = quote(new_data)
-    )
-),
-classes = list(
-  pre = NULL,
+predict_xgb_class <- function(object, new_data, ...) {
+  pred <- xgb_pred(object, newdata = new_data, type = "response")
+
   post = function(x, object) {
     if (is.vector(x)) {
       x <- ifelse(x >= 0.5, object$lvl[2], object$lvl[1])
@@ -85,16 +57,12 @@ classes = list(
       x <- object$lvl[apply(x, 1, which.max)]
     }
     x
-  },
-  func = c(pkg = NULL, fun = "xgb_pred"),
-  args =
-    list(
-      object = quote(object$fit),
-      newdata = quote(new_data)
-    )
-),
-prob = list(
-  pre = NULL,
+  }
+}
+
+predict_xgb_prob <- function(object, new_data, ...) {
+  pred <- xgb_pred(object, newdata = new_data, type = "response")
+
   post = function(x, object) {
     if (is.vector(x)) {
       x <- tibble(v1 = 1 - x, v2 = x)
@@ -103,20 +71,5 @@ prob = list(
     }
     colnames(x) <- object$lvl
     x
-  },
-  func = c(pkg = NULL, fun = "xgb_pred"),
-  args =
-    list(
-      object = quote(object$fit),
-      newdata = quote(new_data)
-    )
-),
-raw = list(
-  pre = NULL,
-  func = c(fun = "xgb_pred"),
-  args =
-    list(
-      object = quote(object$fit),
-      newdata = quote(new_data)
-    )
-)
+  }
+}

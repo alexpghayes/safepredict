@@ -8,7 +8,6 @@
 #' @template boilerplate
 #'
 #' @export
-#'
 safe_predict.cv.glmnet <- function(
   object,
   new_data,

@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+UPDATE: this is out of date, we're now using the `multi_predict()` generic for this. stay turned for updates.
+
 In some cases there are computationally efficient tricks to get predictions for multiple fits from the same model[^1].
 
 [^1]: Some terminology: a *model* is a family of probability distributions or functions. That is, a model is a set. An estimator is a way to calculate the parameters of a model from a dataset. The value of an estimator may depend on hyperparameters, which influence estimation but not the model. For example, $\lambda$ is a hyperparameter for the LASSO estimator for the linear model. The resulting estimates are a fit (sometimes referred to in the tidymodels universe as a sub-model).
