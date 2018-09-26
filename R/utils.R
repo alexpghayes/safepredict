@@ -93,6 +93,13 @@ binomial_helper <- function(
   }
 }
 
+
+prob_to_class_2 <- function(x, object) {
+  x <- ifelse(x >= 0.5, object$lvl[2], object$lvl[1])
+  unname(x)
+}
+
+
 multinomial_helper <- function(
   raw,
   levels,
