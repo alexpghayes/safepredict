@@ -99,6 +99,9 @@ prob_to_class_2 <- function(x, object) {
   unname(x)
 }
 
+# TODO: make this more informative
+no_method_for_type_error <- function()
+  stop("There's no method for the given object and type.")
 
 multinomial_helper <- function(
   raw,
@@ -128,4 +131,12 @@ positive_class <- function(object) {
   stopifnot(family(object)$family == "binomial")
 
   # TODO
+}
+
+maybe_multivariate <- function(results, object) {
+  if (isTRUE(ncol(results) > 1))
+    results <- as_tibble(results)
+  else
+    results <- unname(results[, 1])
+  results
 }

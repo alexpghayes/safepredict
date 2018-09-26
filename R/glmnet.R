@@ -1,3 +1,5 @@
+# TODO: how to specify the penalty value
+
 #' Safe predictions for cross-validated glmnet objects
 #'
 #' @param object TODO
@@ -287,37 +289,13 @@ multi_predict._lognet <-
 #' @importFrom utils globalVariables
 utils::globalVariables(c("group", ".pred"))
 
-,
-classes = list(
-  pre = NULL,
-  post = organize_glmnet_class,
-  func = c(fun = "predict"),
-  args =
-    list(
-      object = quote(object$fit),
-      newx = quote(as.matrix(new_data)),
-      type = "response",
-      s = quote(object$spec$args$penalty)
+check_glmnet_lambda <- function(dat, object) {
+  if (length(object$fit$lambda) > 1)
+    stop(
+      "`predict` doesn't work with multiple penalties (i.e. lambdas). ",
+      "Please specify a single value using `penalty = some_value` or use ",
+      "`multi_predict` to get multiple predictions per row of data.",
+      call. = FALSE
     )
-),
-prob = list(
-  pre = NULL,
-  post = organize_glmnet_prob,
-  func = c(fun = "predict"),
-  args =
-    list(
-      object = quote(object$fit),
-      newx = quote(as.matrix(new_data)),
-      type = "response",
-      s = quote(object$spec$args$penalty)
-    )
-),
-raw = list(
-  pre = NULL,
-  func = c(fun = "predict"),
-  args =
-    list(
-      object = quote(object$fit),
-      newx = quote(as.matrix(new_data))
-    )
-)
+  dat
+}

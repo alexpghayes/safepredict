@@ -12,6 +12,14 @@ safe_predict.mars <- function(
   type <- match.arg(type)
 
   ## TODO: dispatch on type
+  if (type == "response")
+    predict_mars_response(object, new_data)
+  else if (type == "class")
+    predict_mars_class(object, new_data)
+  else if (type == "prob")
+    predict_mars_prob(object, new_data)
+  else
+    no_method_for_type_error()
 
   pred
 }

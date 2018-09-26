@@ -1,46 +1,58 @@
-,
-pred = list(
-  pre = NULL,
-  post = maybe_multivariate,
-  func = c(fun = "predict"),
-  args =
-    list(
-      object = quote(object$fit),
-      x = quote(as.matrix(new_data))
-    )
-),
-classes = list(
-  pre = NULL,
+safe_predict.mars <- function(
+  object,
+  new_data,
+  type = c(
+    "response",
+    "class",
+    "prob"
+  ),
+  ...) {
+
+  new_data <- safe_tibble(new_data)
+  type <- match.arg(type)
+
+  new_data <- as.matrix(new_data)
+
+  ## TODO: dispatch on type
+  if (type == "response")
+    predict_keras_response(object, new_data)
+  else if (type == "class")
+    predict_keras_class(object, new_data)
+  else if (type == "prob")
+    predict_keras_prob(object, new_data)
+  else
+    no_method_for_type_error()
+
+  pred
+}
+
+
+predict_keras_response <- function(object, new_data, ...) {
+  pred <- predict(object, newdata = new_data)
+  maybe_multivariate(pred)
+}
+
+predict_keras_class <- function(object, new_data, ...) {
+  pred <- predict_classes(object, newdata = new_data)
+
+  # need to recall levels of factor from model_fit object
   post = function(x, object) {
     object$lvl[x + 1]
-  },
-  func = c(fun = "predict_classes"),
-  args =
-    list(
-      object = quote(object$fit),
-      x = quote(as.matrix(new_data))
-    )
-),
-prob = list(
-  pre = NULL,
-  post = function(x, object) {
+  }
+
+  post(pred)
+}
+
+predict_keras_prob <- function(object, new_data, ...) {
+
+  pred <- predict_proba(object, newdata = new_data)
+
+  function(x, object) {
     x <- as_tibble(x)
     colnames(x) <- object$lvl
     x
-  },
-  func = c(fun = "predict_proba"),
-  args =
-    list(
-      object = quote(object$fit),
-      x = quote(as.matrix(new_data))
-    )
-),
-raw = list(
-  pre = NULL,
-  func = c(fun = "predict"),
-  args =
-    list(
-      object = quote(object$fit),
-      x = quote(as.matrix(new_data))
-    )
-)
+  }
+
+  post(pred)
+}
+
