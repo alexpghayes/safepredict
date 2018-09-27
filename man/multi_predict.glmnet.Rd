@@ -5,7 +5,7 @@
 \title{Safe predictions for cross-validated glmnet objects}
 \usage{
 \method{multi_predict}{glmnet}(object, new_data, type = c("response",
-  "class", "prob", "link"), params = NULL)
+  "class", "prob"), params = NULL)
 }
 \arguments{
 \item{object}{TODO}
@@ -14,7 +14,14 @@
 
 \item{type}{TODO}
 
-\item{params}{TODO}
+\item{params}{\itemize{
+\item works with a single value for the penalty. otherwise CV is gonna be
+inconsistent a wild pain in the rear.
+\itemize{
+\item works with a vector of values for the penalty
+\item in the future will work with a tibble defining a parameter grid
+}
+}}
 
 \item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
 coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}

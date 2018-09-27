@@ -5,7 +5,7 @@
 \title{Safe predictions for glmnet objects}
 \usage{
 \method{safe_predict}{glmnet}(object, new_data, type = c("response",
-  "class", "prob", "link"), penalty = NULL)
+  "class", "prob", "link"), penalty = NULL, threshold = 0.5)
 }
 \arguments{
 \item{object}{TODO}
@@ -14,7 +14,9 @@
 
 \item{type}{TODO}
 
-\item{penalty}{TODO}
+\item{penalty}{Unlike \code{\link[=safe_predict.cv.glmnet]{safe_predict.cv.glmnet()}}, here you can explicitly
+set a value of \code{penalty}. In the CV version you have to pick one of the
+cross-validated versions of the penalty.}
 
 \item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
 coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}

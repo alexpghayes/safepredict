@@ -5,7 +5,7 @@
 \title{Safe predictions from a generalized linear model}
 \usage{
 \method{safe_predict}{glm}(object, new_data, type = c("link", "conf_int",
-  "response", "class", "prob"), se_fit = FALSE, level = 0.95,
+  "response", "class", "prob"), std_error = FALSE, level = 0.95,
   threshold = 0.5, ...)
 }
 \arguments{
@@ -40,11 +40,6 @@ available for \code{binomial} and \code{quasibinomial} families
 
 Default is \code{"link"}.}
 
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
 \item{level}{A number between \code{0} and \code{1} to use as the confidence level
 when calculating confidence and prediction intervals. Ignored
 otherwise.}
@@ -56,6 +51,11 @@ classified as positive. Defaults to \code{0.5}. See \code{\link[=positive_class]
 assistance determining which class is considered the positive class.}
 
 \item{...}{Unused.}
+
+\item{se_fit}{Logical indicating whether or not to also calculate standard
+errors for the fit at each point. These standard errors do not include
+the residual variance. Ignored when calculating a confidence or prediction
+interval.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.

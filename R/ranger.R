@@ -37,7 +37,7 @@ safe_predict.ranger  <- function(
   else if (mode == "Regression" && type == "conf_int")
     predict_ranger_confint(object, new_data, level, std_error)
   else
-    stop("No predict method for ranger tree with treetype:", mode)
+    could_not_dispatch_error()
 }
 
 predict_ranger_helper <- function(

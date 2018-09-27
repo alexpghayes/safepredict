@@ -5,7 +5,8 @@
 \title{Safe predictions for cross-validated glmnet objects}
 \usage{
 \method{safe_predict}{cv.glmnet}(object, new_data, type = c("response",
-  "class", "prob", "link"), penalty = c("1-se", "min"))
+  "class", "prob", "link"), penalty = c("1-se", "min"),
+  threshold = 0.5)
 }
 \arguments{
 \item{object}{TODO}

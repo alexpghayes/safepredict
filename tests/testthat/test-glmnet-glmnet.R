@@ -18,7 +18,8 @@ safe_predict(fit, test, penalty = 0.1)
 
 
 # long format, need to change to nested
-multi_predict(fit, test, params = 1:5)
+n <- multi_predict(fit, test, params = 1:5) %>%
+  nest(-id)
 
 # this should error
 multi_predict(fit, test, params = 1:5, type = "prob")

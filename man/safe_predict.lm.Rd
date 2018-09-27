@@ -5,7 +5,7 @@
 \title{Safe predictions from a linear model}
 \usage{
 \method{safe_predict}{lm}(object, new_data, type = c("response",
-  "conf_int", "pred_int"), se_fit = FALSE, level = 0.95, ...)
+  "conf_int", "pred_int"), std_error = FALSE, level = 0.95, ...)
 }
 \arguments{
 \item{object}{An \code{lm} object returned from a call to \code{\link[stats:lm]{stats::lm()}}.}
@@ -20,16 +20,16 @@ coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.
 \item \code{"pred_int"}: Predictions with accompanying prediction interval.
 }}
 
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
 \item{level}{A number between \code{0} and \code{1} to use as the confidence level
 when calculating confidence and prediction intervals. Ignored
 otherwise.}
 
 \item{...}{Unused.}
+
+\item{se_fit}{Logical indicating whether or not to also calculate standard
+errors for the fit at each point. These standard errors do not include
+the residual variance. Ignored when calculating a confidence or prediction
+interval.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
@@ -72,7 +72,7 @@ safe_predict(fit, mtcars)
 mt2 <- mtcars
 diag(mt2) <- NA  # overly aggressive
 
-safe_predict(fit, mt2, se_fit = TRUE)
+safe_predict(fit, mt2, std_error = TRUE)
 safe_predict(fit, mt2, type = "pred_int", level = 0.9)
 
 }
