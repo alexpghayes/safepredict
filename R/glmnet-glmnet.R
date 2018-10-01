@@ -21,7 +21,8 @@ safe_predict.glmnet <- function(
     "link"
   ),
   penalty = NULL,
-  threshold = 0.5) {
+  threshold = 0.5,
+  ...) {
 
   ## input validation
 

@@ -25,15 +25,17 @@ safe_predict <- function(
   std_error = FALSE,
   ...) {
 
-  if (type != "raw" && length(opts) > 0)
+  if (!is.null(type) && type != "raw" && length(opts) > 0)
     warning("`opts` is only used with `type = 'raw'` and was ignored.")
 
   if (!is.null(type) && type == "raw") {
     call <- quote(predict(object, new_data))
     call <- rlang::call_modify(call, !!!opts)
-    rlang::eval_tidy(call)
-  } else
-    UseMethod("safe_predict")
+    return(rlang::eval_tidy(call))
+  }
+
+  # TODO: don't pass `opts`` to individual methods
+  UseMethod("safe_predict")
 }
 
 safe_predict.default <- function(object, ...) {
@@ -65,5 +67,5 @@ multi_predict <- function(object, ...)
 #' @rdname multi_predict
 multi_predict.default <- function(object, ...)
   stop ("No `multi_predict` method exists for objects with classes ",
-        paste0("'", class(), "'", collapse = ", "), call. = FALSE)
+        paste0("'", class(object), "'", collapse = ", "), call. = FALSE)
 

@@ -49,7 +49,7 @@ multi_predict_ranger_helper <- function(
 
   # this parameter name should agree with the acceptable parameter names
   # as outlined in the model implementation document
-  params$num_tree
+  # params$num_tree
 
   pred_obj <- predict(object, new_data, type = "response", num.trees = num_trees)
   pred_mat <- pred_obj$predictions

@@ -12,7 +12,6 @@
 #' @template boilerplate
 #'
 #' @export
-
 multi_predict.glmnet <- function(
   object,
   new_data,
