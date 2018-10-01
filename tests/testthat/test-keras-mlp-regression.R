@@ -1,3 +1,5 @@
+context("test-keras-mlp-regression")
+
 
 test_that('keras regression prediction', {
 

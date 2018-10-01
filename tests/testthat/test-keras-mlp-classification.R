@@ -1,3 +1,5 @@
+context("test-keras-mlp-classification")
+
 library(testthat)
 context("simple neural network execution with keras")
 library(parsnip)

@@ -68,7 +68,7 @@ multi_predict_ranger_prob <- function(
   pred_array <- pred_obj$predictions
 
   pred_list <- apply(pred_array, 3, predict_ranger_prob)
-  pred_list <- do.call(bind_rows, pred_list, .id = ".tree")
+  pred_list <- do.call(bind_rows, list(pred_list, .id = ".tree"))
 
   pred <- as_pred_tibble(pred_mat, 1:pred_obj$num.trees)
   # TODO: is tree going to be character here? should be numeric

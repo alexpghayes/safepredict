@@ -1,5 +1,7 @@
 context("test-nnet-nnet")
 
+nn_dat <- read.csv("nnet_test.txt")
+
 library(testthat)
 context("simple neural network execution with nnet")
 library(parsnip)
