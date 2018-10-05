@@ -47,7 +47,7 @@ predict_ranger_helper <- function(
   std_error = FALSE) {
 
   pred_obj <- predict(object, new_data, type = "response")
-  pred <- as_pred_tibble(pred_obj$predictions, nm = NULL)
+  pred <- as_tibble(pred_obj$predictions)
 
   if (std_error)
     pred$.std_error <- predict(object, new_data, type = "se")$predictions
