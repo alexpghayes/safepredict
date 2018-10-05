@@ -9,19 +9,6 @@ safe_tibble <- function(df) {
 
 }
 
-# assumes table_like has a single column
-#' @export
-as_pred_tibble <- function(table_like, names = ".pred") {
-
-  if (is.matrix(table_like))
-    colnames(table_like) <- names
-
-  if (is.null(names))
-    as_tibble(table_like)
-
-  purrr::set_names(as_tibble(table_like), names)
-}
-
 # use this instead of mutate because it puts the column first in the dataframe
 add_id_column <- function(data) {
   tibble::add_column(data, id = 1:nrow(data), .before = TRUE)

@@ -12,7 +12,7 @@ safe_predict.train.kknn <- function(
   new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
-  # standard setting of default for classification problems
+  # avoid bad match.arg() default for classification problems
   response <- object$response
   if (response != "continuous" && type == "response")
     type <- "class"
@@ -36,10 +36,10 @@ safe_predict.train.kknn <- function(
 
 predict_kknn_raw <- function(object, new_data, ...) {
   pred <- predict(object, newdata = new_data, type = "raw")
-  as_tibble(pred)
+  as_pred_tibble(pred)
 }
 
 predict_kknn_prob <- function(object, new_data, ...) {
   pred <- predict(object, newdata = new_data, type = "prob")
-  as_tibble(pred)
+  as_pred_tibble(pred)
 }
