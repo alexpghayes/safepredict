@@ -74,6 +74,9 @@ binomial_helper <- function(
   type = c("prob", "class"),
   threshold = 0.5) {
 
+  # TODO: this should really just create an appropriate probability
+  # matrix and pass the work off to multinomial_helper
+
   stopifnot(length(levels) == 2)
 
   type <- match.arg(type)
@@ -127,14 +130,6 @@ positive_class <- function(object) {
   stopifnot(family(object)$family == "binomial")
 
   # TODO
-}
-
-maybe_multivariate <- function(results, object) {
-  if (isTRUE(ncol(results) > 1))
-    results <- as_tibble(results)
-  else
-    results <- unname(results[, 1])
-  results
 }
 
 pred_se_to_confint <- function(pred_se, level, se_fit) {

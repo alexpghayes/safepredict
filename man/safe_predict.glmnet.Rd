@@ -5,7 +5,7 @@
 \title{Safe predictions for glmnet objects}
 \usage{
 \method{safe_predict}{glmnet}(object, new_data, type = c("response",
-  "class", "prob", "link"), penalty = NULL, threshold = 0.5)
+  "class", "prob", "link"), penalty = NULL, threshold = 0.5, ...)
 }
 \arguments{
 \item{object}{TODO}
@@ -18,6 +18,8 @@
 set a value of \code{penalty}. In the CV version you have to pick one of the
 cross-validated versions of the penalty.}
 
+\item{...}{Unused.}
+
 \item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
 coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
 
@@ -29,8 +31,6 @@ interval.}
 \item{level}{A number between \code{0} and \code{1} to use as the confidence level
 when calculating confidence and prediction intervals. Ignored
 otherwise.}
-
-\item{...}{Unused.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.

@@ -11,6 +11,7 @@
 # num_trees: predictions **by tree**
 # params$num_trees: aggregated predictions on n trees using various values of n
 
+#' @export
 multi_predict.ranger  <- function(
   object,
   new_data,

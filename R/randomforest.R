@@ -1,9 +1,11 @@
+#' @export
 safe_predict.randomForest <- function(
   object,
   new_data,
   type = c(
     "response",
-    "class"
+    "class",
+    "prob"
   ),
   ...) {
 
@@ -16,15 +18,13 @@ safe_predict.randomForest <- function(
     predict_rf_prob(object, new_data)
   else
     no_method_for_type_error()
-
-  pred
 }
 
 predict_rf_helper <- function(object, new_data, ...) {
-  predict(object, newdata = new_data)
+  as_tibble(predict(object, newdata = new_data))
 }
 
 predict_rf_prob <- function(object, new_data, ...) {
   pred <- predict(object, newdata = new_data, type = "prob")
-  as_pred_tibble(pred)
+  as_tibble(pred)
 }

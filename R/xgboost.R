@@ -1,3 +1,4 @@
+#' @export
 safe_predict.xgb.Booster <- function(
   object,
   new_data,
@@ -8,8 +9,15 @@ safe_predict.xgb.Booster <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
+  # the following seems to mess things up, perhaps because of how missingness
+  # is encoded
+  # new_data <- to_xgb_input(new_data)
   type <- match.arg(type)
+
+  pred <- xgb_pred(object, new_data)
+  return(as_tibble(pred))
+
+  # another early exit to get to MVP stage ASAP
 
   ## TODO: dispatch on type
   if (type == "response")
@@ -20,10 +28,13 @@ safe_predict.xgb.Booster <- function(
     predict_xgb_prob(object, new_data)
   else
     no_method_for_type_error()
-
-  pred
 }
 
+to_xgb_input <- function(data) {
+  if (!inherits(data, "xgb.DMatrix"))
+    data <- xgboost::xgb.DMatrix(data = as.matrix(data), missing = NA)
+  data
+}
 
 xgb_pred <- function(object, newdata, ...) {
   if (!inherits(newdata, "xgb.DMatrix")) {

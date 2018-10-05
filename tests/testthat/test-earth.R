@@ -1,27 +1,27 @@
-context("test-nnet-nnet")
+context("test-earth")
 
-skip_if_not_installed("nnet")
-library(nnet)
+skip_if_not_installed("earth")
+library(earth)
 
-reg <- nnet(mpg ~ ., data = mtcars, size = 50, linout = TRUE, trace = FALSE)
-binary <- nnet(I(Species == "setosa") ~ ., iris, size = 50, trace = FALSE)
-multi <- nnet(formula = Species ~ ., data = iris, size = 50, trace = FALSE)
+reg <- earth(mpg ~ ., data = mtcars)
+binary <- earth(I(Species == "setosa") ~ ., iris)
+multi <- earth(formula = Species ~ ., data = iris)
 
-test_that("nnet basics - regression", {
+test_that("earth basics - regression", {
   expect_silent(safe_pred <- safe_predict(reg, mtcars))
   check_predict_basic(safe_pred, mtcars)
-  pred <- predict(reg, mtcars, type = "raw")
+  pred <- predict(reg, mtcars)
   expect_same_content(safe_pred, pred)
 })
 
-test_that("nnet basics - binary", {
+test_that("earth basics - binary", {
   expect_silent(safe_pred <- safe_predict(binary, iris))
   check_predict_basic(safe_pred, iris)
   pred <- predict(binary, iris)
   expect_same_content(safe_pred, pred)
 })
 
-test_that("nnet basics - multiclass", {
+test_that("earth basics - multiclass", {
   expect_silent(safe_pred <- safe_predict(multi, iris))
   check_predict_basic(safe_pred, iris)
   pred <- predict(multi, iris)

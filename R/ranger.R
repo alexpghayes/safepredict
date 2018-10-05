@@ -4,6 +4,7 @@ library(ranger)
 
 # TODO: implement a quantile method for the predictions
 
+#' @export
 safe_predict.ranger  <- function(
   object,
   new_data,
@@ -46,7 +47,7 @@ predict_ranger_helper <- function(
   std_error = FALSE) {
 
   pred_obj <- predict(object, new_data, type = "response")
-  pred <- as_pred_tibble(pred_obj$predictions)
+  pred <- as_pred_tibble(pred_obj$predictions, nm = NULL)
 
   if (std_error)
     pred$.std_error <- predict(object, new_data, type = "se")$predictions

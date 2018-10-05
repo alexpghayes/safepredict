@@ -1,3 +1,4 @@
+#' @export
 safe_predict.ml_model <- function(
   object,
   new_data,

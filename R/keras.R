@@ -1,3 +1,4 @@
+#' @export
 safe_predict.keras <- function(
   object,
   new_data,

@@ -1,40 +1,45 @@
-context("test-c5")
+context("test-C5.0")
 
-test_that('C5.0 prediction', {
+skip_if_not_installed("C50")
+library(C50)
 
-  skip_if_not_installed("C50")
+data(churn)
 
-  classes_xy <- fit_xy(
-    lc_basic,
-    x = lending_club[, num_pred],
-    y = lending_club$Class,
-    engine = "C5.0",
-    control = ctrl
-  )
+tree <- C5.0(x = churnTrain[, -20], y = churnTrain$churn)
+rule <- C5.0(churn ~ ., data = churnTrain, rules = TRUE)
 
-  xy_pred <- predict(classes_xy$fit, newdata = lending_club[1:7, num_pred])
-  expect_equal(xy_pred, predict_class(classes_xy, lending_club[1:7, num_pred]))
+# test arguments
 
+test_that("C5.0 basics - class", {
+
+  expect_silent({
+    safe_class_tree <- safe_predict(tree, churnTest)
+    safe_class_rule <- safe_predict(rule, churnTest)
+  })
+
+  check_predict_basic(safe_class_tree, churnTest)
+  check_predict_basic(safe_class_rule, churnTest)
+
+  class_tree <- predict(tree, churnTest)
+  class_rule <- predict(rule, churnTest)
+
+  expect_same_content(safe_class_tree, class_tree)
+  expect_same_content(safe_class_rule, class_rule)
 })
 
-test_that('C5.0 probabilities', {
+test_that("C5.0 basics - prob", {
 
-  skip_if_not_installed("C50")
+  expect_silent({
+    safe_prob_tree <- safe_predict(tree, churnTest, type = "prob")
+    safe_prob_rule <- safe_predict(rule, churnTest, type = "prob")
+  })
 
-  classes_xy <- fit_xy(
-    lc_basic,
-    x = lending_club[, num_pred],
-    y = lending_club$Class,
-    engine = "C5.0",
-    control = ctrl
-  )
+  check_predict_basic(safe_prob_tree, churnTest)
+  check_predict_basic(safe_prob_rule, churnTest)
 
-  xy_pred <- predict(classes_xy$fit, newdata = as.data.frame(lending_club[1:7, num_pred]), type = "prob")
-  xy_pred <- as_tibble(xy_pred)
-  expect_equal(xy_pred, predict_classprob(classes_xy, lending_club[1:7, num_pred]))
+  prob_tree <- predict(tree, churnTest, type = "prob")
+  prob_rule <- predict(rule, churnTest, type = "prob")
 
-  one_row <- predict_classprob(classes_xy, lending_club[1, num_pred])
-  expect_equal(xy_pred[1,], one_row)
-
+  expect_same_content(safe_prob_tree, prob_tree)
+  expect_same_content(safe_prob_rule, prob_rule)
 })
-
