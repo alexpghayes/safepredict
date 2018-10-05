@@ -9,7 +9,6 @@ safe_predict.train.kknn <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
   # avoid bad match.arg() default for classification problems
@@ -26,10 +25,10 @@ safe_predict.train.kknn <- function(
 
   check_type_by_param(type_by_response, type, response)
 
-  if (type %in% c("response", "class"))
+  if (type == "response")
     predict_kknn_raw(object, new_data)
-  else if (type == "prob")
-    predict_kknn_prob(object, new_data)
+  else if (type %in% c("prob", "class"))
+    predict_kknn_prob_class(object, new_data, type)
   else
     no_method_for_type_error()
 }
@@ -39,7 +38,7 @@ predict_kknn_raw <- function(object, new_data, ...) {
   as_pred_tibble(pred)
 }
 
-predict_kknn_prob <- function(object, new_data, ...) {
-  pred <- predict(object, newdata = new_data, type = "prob")
-  as_pred_tibble(pred)
+predict_kknn_prob_class <- function(object, new_data, type) {
+  raw <- predict(object, newdata = new_data, type = "prob")
+  multinomial_helper(raw, colnames(raw), type)
 }

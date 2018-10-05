@@ -73,6 +73,10 @@ multi_glmnet_link <- function(object, new_data, params) {
   as_pred_tibble(pred_mat)
 }
 
+add_id_column <- function(data) {
+  tibble::add_column(data, id = 1:nrow(data), .before = TRUE)
+}
+
 multi_glmnet_numeric <- function(object, new_data, type, params) {
   pred_mat <- predict(object, new_data, type = "response", s = params)
   pred <- as_pred_tibble(pred_mat, names = params)

@@ -54,7 +54,6 @@ safe_predict.glm <- function(
 
   ## input validation
 
-  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
   validate_logical(std_error)
@@ -112,7 +111,7 @@ predict_glm_link <- function(object, new_data, std_error) {
 
     pred <- tibble(
       .pred = pred_list$fit,
-      .pred_std_error = pred_list$se.fit
+      .std_error = pred_list$se.fit
     )
   }
 

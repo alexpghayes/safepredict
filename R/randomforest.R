@@ -9,7 +9,6 @@ safe_predict.randomForest <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
   if (type %in% c("response", "class"))

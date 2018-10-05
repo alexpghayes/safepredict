@@ -4,7 +4,11 @@ skip_if_not_installed("earth")
 library(earth)
 
 reg <- earth(mpg ~ ., data = mtcars)
-binary <- earth(I(Species == "setosa") ~ ., iris)
+binary <- earth(
+  I(Species == "setosa") ~ Sepal.Length,
+  iris[1:55, ],
+  glm = list(family = "binomial")
+)
 multi <- earth(formula = Species ~ ., data = iris)
 
 test_that("earth basics - regression", {

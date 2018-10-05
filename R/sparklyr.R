@@ -9,9 +9,7 @@ safe_predict.ml_model <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
-
   pred <- ml_predict(object, dataset = new_data)
 
   if (type == "response")

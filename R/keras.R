@@ -9,9 +9,7 @@ safe_predict.keras <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- match.arg(type)
-
   new_data <- as.matrix(new_data)
 
   ## TODO: dispatch on type
