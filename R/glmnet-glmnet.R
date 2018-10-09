@@ -21,7 +21,7 @@ safe_predict.glmnet <- function(
     "link"
   ),
   penalty = NULL,
-  threshold = 0.5,
+  threshold = 0.5, # MK Should `threshold` be here? It's only applicable to 2 class models.
   ...) {
 
   ## input validation
@@ -57,6 +57,8 @@ safe_predict.glmnet <- function(
 
   check_type_by_param(type_by_param, type, family, all = "link")
 
+  # MK GAK!
+  
   if (type == "link")
     predict_glmnet_link(object, new_data, penalty)
   else if (family == "gaussian")

@@ -26,3 +26,8 @@
 #'   Some models may also set a `method` attribute to detail the method
 #'   used to calculate the intervals.
 #'
+
+# MK What about stan models that can to conf and prediction intervals on
+# MK class probabilities? Also, multivariate outcomes should produce columns 
+# MK named `.pred_{column name}`. For classes, is it `.pred` or `.pred_class`?
+

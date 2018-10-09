@@ -45,6 +45,7 @@ predict_earth_prob <- function(object, new_data, ...) {
 
   pred <- predict(object, newdata = new_data, type = "response")
 
+  # MK this is duplicated in a few places
   post = function(x, object) {
     x <- x[,1]
     x <- tibble(v1 = 1 - x, v2 = x)

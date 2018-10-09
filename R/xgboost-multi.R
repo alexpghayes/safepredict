@@ -43,5 +43,7 @@ xgb_by_tree <- function(tree, object, new_data, type, ...) {
   }
   pred[["trees"]] <- tree
   pred[[".row"]] <- 1:nrow(new_data)
+  # MK I like `.row` but in other code you use `id`. Is this inconsistent or am
+  # MK I reading it wrong? 
   pred[, c(".row", "trees", nms)]
 }

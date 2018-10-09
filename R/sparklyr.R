@@ -9,9 +9,13 @@ safe_predict.ml_model <- function(
   ),
   ...) {
 
+  # MK um this shouldn't convert a spark object to a tibble, right? 
   new_data <- safe_tibble(new_data)
   type <- match.arg(type)
 
+  # MK This makes me think that you will have to attach this package (and have it
+  # MK installed). I don't see anything that checks to see if the package is 
+  # MK installed and loads it. 
   pred <- ml_predict(object, dataset = new_data)
 
   if (type == "response")

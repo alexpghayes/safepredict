@@ -3,7 +3,7 @@
 ##   - `param` grid should always behave the same way
 ##   - `param` grid takes columns of hyperparameters
 ##   - if a value **does not effect** the estimation process, it doesn't go
-##     in `param`. since num_trees affects esatimation process, it can go
+##     in `param`. since num_trees affects estimation process, it can go
 ##     in params.
 ##   - param can either be a tibble, in which case we go row by row
 ##     or it can be a list, in which we take the cartesian product
@@ -15,7 +15,7 @@
 multi_predict.ranger  <- function(
   object,
   new_data,
-  params = NULL,
+  params = NULL, 
   num_trees = NULL,
   verbose = FALSE,
   seed = sample.int(10^5, 1),
@@ -34,6 +34,7 @@ multi_predict.ranger  <- function(
   # from objects fit with the wrong stuff
 
   # TODO: make verbose and seed actually work
+  # MK yes, that would be a good idea :-)
 
   if (mode == "Probability estimation")
     multi_predict_ranger_prob(object, new_data, type)
@@ -57,6 +58,7 @@ multi_predict_ranger_helper <- function(
   pred <- as_pred_tibble(pred_mat, 1:pred_obj$num.trees)
 
   # TODO: is tree going to be character here? should be numeric
+  # MK should be numeric
   gather(pred, tree, .pred)
 }
 
@@ -73,5 +75,6 @@ multi_predict_ranger_prob <- function(
 
   pred <- as_pred_tibble(pred_mat, 1:pred_obj$num.trees)
   # TODO: is tree going to be character here? should be numeric
+  # MK should be numeric
   gather(pred, tree, .pred)
 }

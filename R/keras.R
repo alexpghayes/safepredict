@@ -48,6 +48,7 @@ predict_keras_prob <- function(object, new_data, ...) {
 
   pred <- predict_proba(object, newdata = new_data)
 
+  # MK missing a `post =` here?
   function(x, object) {
     x <- as_tibble(x)
     colnames(x) <- object$lvl

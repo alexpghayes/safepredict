@@ -14,6 +14,9 @@ add_id_column <- function(data) {
   tibble::add_column(data, id = 1:nrow(data), .before = TRUE)
 }
 
+# MK Use `.id` instead or `.row`
+
+
 validate_logical <- function(x) {
   arg_name <- as.character(substitute(x))
   if (!is.logical(x) || length(x) != 1)
@@ -60,6 +63,8 @@ binomial_helper <- function(
   levels,
   type = c("prob", "class"),
   threshold = 0.5) {
+  
+  # MK the thresholding part we are going to add to `probably`
 
   # TODO: this should really just create an appropriate probability
   # matrix and pass the work off to multinomial_helper
@@ -118,6 +123,10 @@ positive_class <- function(object) {
 
   # TODO
 }
+
+# MK it's always the second level. We might want to tie this in with the 
+# MK global variable defined by `yardstick` to be consistent? 
+
 
 pred_se_to_confint <- function(pred_se, level, se_fit) {
   crit_val <- qnorm(1 - level / 2)

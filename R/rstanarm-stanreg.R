@@ -16,3 +16,5 @@ safe_predict.stanreg <- function(
   pred <- predict(object, new_data, type = "response")
   as_pred_tibble(pred)
 }
+
+# MK where does the conf and prediction interval code happen? 

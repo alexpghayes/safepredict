@@ -8,6 +8,7 @@ earth_submodel_pred <- function(object, new_data, terms = 2:3, ...) {
 #' @importFrom tibble as_tibble tibble
 #' @importFrom stats update
 earth_reg_updater <- function(num, object, new_data, ...) {
+  # MK You'll need to fully attach `earth` for this to work
   object <- update(object, nprune = num)
   pred <- predict(object, new_data, ...)
   if (ncol(pred) == 1) {

@@ -38,6 +38,8 @@ to_xgb_input <- function(data) {
 
 xgb_pred <- function(object, newdata, ...) {
   if (!inherits(newdata, "xgb.DMatrix")) {
+    # MK check to make sure all columns are numeric first? 
+    # MK why not use `to_xgb_input` above? 
     newdata <- as.matrix(newdata)
     newdata <- xgboost::xgb.DMatrix(data = newdata, missing = NA)
   }
@@ -61,6 +63,8 @@ predict_xgb_response <- function(object, new_data, ...) {
 predict_xgb_class <- function(object, new_data, ...) {
   pred <- xgb_pred(object, newdata = new_data, type = "response")
 
+  # MK use bionomial helper function? 
+  # MK No threshold argument? 
   post = function(x, object) {
     if (is.vector(x)) {
       x <- ifelse(x >= 0.5, object$lvl[2], object$lvl[1])
