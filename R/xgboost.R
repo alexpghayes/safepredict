@@ -31,20 +31,15 @@ safe_predict.xgb.Booster <- function(
 }
 
 to_xgb_input <- function(data) {
+  # MK check to make sure all columns are numeric first?
+
   if (!inherits(data, "xgb.DMatrix"))
     data <- xgboost::xgb.DMatrix(data = as.matrix(data), missing = NA)
   data
 }
 
-xgb_pred <- function(object, newdata, ...) {
-  if (!inherits(newdata, "xgb.DMatrix")) {
-    # MK check to make sure all columns are numeric first? 
-    # MK why not use `to_xgb_input` above? 
-    newdata <- as.matrix(newdata)
-    newdata <- xgboost::xgb.DMatrix(data = newdata, missing = NA)
-  }
-
-  res <- predict(object, newdata, ...)
+xgb_pred <- function(object, new_data, ...) {
+  res <- predict(object, to_xgb_input(new_data), ...)
 
   x = switch(
     object$params$objective,
@@ -63,16 +58,7 @@ predict_xgb_response <- function(object, new_data, ...) {
 predict_xgb_class <- function(object, new_data, ...) {
   pred <- xgb_pred(object, newdata = new_data, type = "response")
 
-  # MK use bionomial helper function? 
-  # MK No threshold argument? 
-  post = function(x, object) {
-    if (is.vector(x)) {
-      x <- ifelse(x >= 0.5, object$lvl[2], object$lvl[1])
-    } else {
-      x <- object$lvl[apply(x, 1, which.max)]
-    }
-    x
-  }
+  # TODO: use class_prob_helper, for class and probability responses
 }
 
 predict_xgb_prob <- function(object, new_data, ...) {

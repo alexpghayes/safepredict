@@ -21,7 +21,10 @@ safe_predict.glmnet <- function(
     "link"
   ),
   penalty = NULL,
-  threshold = 0.5, # MK Should `threshold` be here? It's only applicable to 2 class models.
+  # MK Should `threshold` be here? It's only applicable to 2 class models.
+  # AH I could dispatch on the subclasses instead? Then link to the all those
+  # AH documentation pages in the doc for `safe_predict.glmnet?`?
+  threshold = 0.5,
   ...) {
 
   ## input validation
@@ -58,7 +61,7 @@ safe_predict.glmnet <- function(
   check_type_by_param(type_by_param, type, family, all = "link")
 
   # MK GAK!
-  
+
   if (type == "link")
     predict_glmnet_link(object, new_data, penalty)
   else if (family == "gaussian")

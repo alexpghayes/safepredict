@@ -13,8 +13,11 @@
 #'   Predictions for observations with missing data will be `NA`. Returned
 #'   tibble has different columns depending on `type`:
 #'
-#'   - `"response"`: `.pred` (numeric)
-#'   - `"class"`: `.pred` (factor)
+#'   - `"response"`:
+#'     - univariate outcome: `.pred` (numeric)
+#'     - multivariate outcomes: `.pred_{outcome name}` (numeric) for each
+#'       outcome
+#'   - `"class"`: `.pred_class` (factor)
 #'   - `"prob"`: `.pred_{level}` columns (numerics between 0 and 1)
 #'   - `"link"`: `.pred` (numeric)
 #'   - `"conf_int"`: `.pred`, `.pred_lower`, `.pred_upper` (all numeric)
@@ -28,6 +31,5 @@
 #'
 
 # MK What about stan models that can to conf and prediction intervals on
-# MK class probabilities? Also, multivariate outcomes should produce columns 
-# MK named `.pred_{column name}`. For classes, is it `.pred` or `.pred_class`?
+# MK class probabilities?
 

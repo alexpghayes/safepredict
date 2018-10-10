@@ -3,7 +3,7 @@
 #' @param object TODO
 #' @param new_data TODO
 #' @param type TODO
-#' @param penalty TODO
+#' @param rule TODO
 #'
 #' @template boilerplate
 #'
@@ -17,22 +17,19 @@ safe_predict.cv.glmnet <- function(
     "prob",
     "link"
   ),
-  penalty = c("1-se", "min"),
+  rule = c("1-se", "min"),
   threshold = 0.5) {
-  
+
   # MK Should `threshold` be here? It's only applicable to 2 class models.
 
-  # MK Don't call it `penalty` since `parsnip` reserves that for lambda; 
-  # MK use `rule` or something else
-  penalty <- match.arg(penalty)
-  penalty <- if (penalty == "1-se") "lambda.1se" else "lambda.min"
-  penalty <- object[[penalty]]
+  rule <- match.arg(rule)
+  rule <- if (rule == "1-se") "lambda.1se" else "lambda.min"
 
   safe_predict.glmnet(
     object = object$glmnet.fit,
     new_data = new_data,
     type = type,
-    penalty = penalty,
+    penalty = object[[rule]],
     threshold = threshold
   )
 }

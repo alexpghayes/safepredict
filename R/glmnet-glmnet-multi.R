@@ -53,19 +53,14 @@ multi_predict.glmnet <- function(
 
   check_type_by_param(type_by_param, type, family)
 
-  # MK oh this is painful :-O
-  if (family == "gaussian")
-    multi_glmnet_numeric(object, new_data, type, params)
-  else if (family == "mgaussian")
-    multi_glmnet_mgaussian(object, new_data, type, params)
-  else if (family == "binomial")
-    multi_glmnet_binomial(object, new_data, type, params)
-  else if (family == "multinomial")
-    multi_glmnet_multinomial(object, new_data, type, params)
-  else if (family == "poisson")
-    multi_glmnet_numeric(object, new_data, type, params)
-  else
+  switch(family,
+    "gaussian" = multi_glmnet_numeric(object, new_data, type, params),
+    "mgaussian" = multi_glmnet_mgaussian(object, new_data, type, params),
+    "binomial" = multi_glmnet_binomial(object, new_data, type, params),
+    "multinomial" = multi_glmnet_multinomial(object, new_data, type, params),
+    "poisson" = multi_glmnet_numeric(object, new_data, type, params),
     could_not_dispatch_error()
+  )
 }
 
 

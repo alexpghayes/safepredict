@@ -48,6 +48,8 @@ predict_keras_prob <- function(object, new_data, ...) {
 
   pred <- predict_proba(object, newdata = new_data)
 
+  # TODO: use class_prob_helper here
+
   # MK missing a `post =` here?
   function(x, object) {
     x <- as_tibble(x)

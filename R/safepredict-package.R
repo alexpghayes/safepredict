@@ -34,7 +34,7 @@ safe_predict <- function(
     return(rlang::eval_tidy(call))
   }
 
-  # TODO: don't pass `opts`` to individual methods
+  # TODO: don't pass `opts` to individual methods
   UseMethod("safe_predict")
 }
 
@@ -46,7 +46,7 @@ safe_predict.default <- function(object, ...) {
 }
 
 # MK doesn't `safepredict` need to add all of these packages to suggests? Does
-# MK it end up attaching these packages? 
+# MK it end up attaching these packages?
 
 # Define a generic to make multiple predictions for the same model object ------
 

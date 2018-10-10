@@ -1,3 +1,11 @@
+use_suggested_package <- function(pkg_name) {
+  if (!requireNamespace(pkg_name, quietly = TRUE))
+    stop(
+      "Must install package `", pkg_name, "` in order to use this function",
+      call. = FALSE
+    )
+}
+
 safe_tibble <- function(df) {
   # try to coerce to a tibble
   # give an informative error on failure
@@ -11,7 +19,7 @@ safe_tibble <- function(df) {
 
 # use this instead of mutate because it puts the column first in the dataframe
 add_id_column <- function(data) {
-  tibble::add_column(data, id = 1:nrow(data), .before = TRUE)
+  tibble::add_column(data, .id = 1:nrow(data), .before = TRUE)
 }
 
 # MK Use `.id` instead or `.row`
@@ -63,7 +71,7 @@ binomial_helper <- function(
   levels,
   type = c("prob", "class"),
   threshold = 0.5) {
-  
+
   # MK the thresholding part we are going to add to `probably`
 
   # TODO: this should really just create an appropriate probability
@@ -124,8 +132,8 @@ positive_class <- function(object) {
   # TODO
 }
 
-# MK it's always the second level. We might want to tie this in with the 
-# MK global variable defined by `yardstick` to be consistent? 
+# MK it's always the second level. We might want to tie this in with the
+# MK global variable defined by `yardstick` to be consistent?
 
 
 pred_se_to_confint <- function(pred_se, level, se_fit) {
