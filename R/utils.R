@@ -10,9 +10,10 @@ safe_tibble <- function(df) {
   # try to coerce to a tibble
   # give an informative error on failure
 
+  # TODO: what to do when this isn't present?
 
   if (!inherits(df, "data.frame"))
-    stop("`newdata` argument must be a data frame.")
+    stop("`new_data` argument must be a data frame.")
   df
 
 }
@@ -79,7 +80,7 @@ binomial_helper <- function(
 
   stopifnot(length(levels) == 2)
 
-  type <- match.arg(type)
+  type <- arg_match(type)
   validate_probability(threshold)
   raw <- as.vector(raw)
 
@@ -106,7 +107,7 @@ multinomial_helper <- function(
   levels,
   type = c("prob", "class")) {
 
-  type <- match.arg(type)
+  type <- arg_match(type)
   probs <- as_tibble(raw)
   colnames(probs) <- paste0(".pred_", levels)
 

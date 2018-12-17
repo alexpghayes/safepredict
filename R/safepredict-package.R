@@ -2,6 +2,7 @@
 #'
 #' @importFrom stats family model.frame model.response na.pass predict qnorm
 #' @importFrom tibble as_tibble tibble
+#' @importFrom rlang arg_match
 "_PACKAGE"
 
 #' Safely predict from a model object

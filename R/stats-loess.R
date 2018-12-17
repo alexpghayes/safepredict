@@ -1,34 +1,18 @@
-#' Safe predictions from a linear model
+#' Safe predictions from a loess object
 #'
-#' @param object An `lm` object returned from a call to [stats::lm()].
-#'
+#' @param object A `loess` object returned from a call to [stats::loess()].
 #' @param type What kind of predictions to return. Options are:
-#'   - `"response"` (default): Standard predictions from linear regression.
+#'   - `"response"` (default): Standard predictions from LOESS regression.
 #'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
 #'   - `"pred_int"`: Predictions with accompanying prediction interval.
 #' @template boilerplate
 #'
-#' @details Do not use on model objects that only subclass `lm`. This will result
-#'   in an error.
-#'
-#' @section Confidence intervals versus predictions intervals:
-#'
-#' TODO
+#' @template intervals
 #'
 #' @export
 #' @examples
 #'
-#' fit <- lm(hp ~ ., mtcars)
-#'
-#' safe_predict(fit, mtcars)
-#'
-#' mt2 <- mtcars
-#' diag(mt2) <- NA  # overly aggressive
-#'
-#' safe_predict(fit, mt2, std_error = TRUE)
-#' safe_predict(fit, mt2, type = "pred_int", level = 0.9)
-#'
-safe_predict.lm <- function(
+safe_predict.loess <- function(
   object,
   new_data,
   type = c(
@@ -56,41 +40,42 @@ safe_predict.lm <- function(
   # are retained in the predictions and join on these rownames
 
   if (type == "response")
-    pred <- predict_lm_response(object, new_data, std_error)
+    pred <- predict_loess_response(object, new_data, std_error)
   else
-    pred <- predict_lm_interval(object, new_data, type, level)
+    pred <- predict_loess_interval(object, new_data, type, level)
 
   pred
 }
 
-predict_lm_response <- function(object, new_data, std_error) {
+predict_loess_response <- function(object, new_data, std_error) {
+
   if (!std_error) {
     pred <- tibble(.pred = predict(object, new_data, na.action = na.pass))
-  } else{
-    pred_list <- predict(object, new_data, se.fit = TRUE, na.action = na.pass)
+  } else {
+    pred_list <- predict(object, new_data, se = TRUE, na.action = na.pass)
     pred <- tibble(.pred = pred_list$fit, .pred_std_error = pred_list$se.fit)
   }
 
   pred
 }
 
-predict_lm_interval <- function(object, new_data, type, level) {
+predict_loess_interval <- function(object, new_data, type, level) {
 
+  pred_list <- predict(object, new_data, se = TRUE, na.action = na.pass)
   interval <- if (type == "conf_int") "confidence" else "prediction"
 
-  pred_mat <- predict(
-    object,
-    new_data,
-    interval = interval,
-    level = level,
-    na.action = na.pass
-  )
+  # sanity check that i'm getting prediction intervals in a mathematically
+  # apppropriate way
+  if (type == "conf_int")
+    se <- pred_list$se.fit
+  else
+    se <- sqrt(pred_list$se.fit^2 + pred_list$residual.scale^2)
 
-  pred <- dplyr::rename(
-    as_tibble(pred_mat),
-    ".pred" = "fit",
-    ".pred_lower" = "lwr",
-    ".pred_upper" = "upr"
+  # TODO: sanity check that I'm getting the right quantiles elsewhere
+  pred <- tibble(
+    .pred = pred_list$fit,
+    .pred_lower = .pred - qt((1 - level) / 2, pred_list$df) * se,
+    .pred_upper = .pred + qt((1 - level) / 2, pred_list$df) * se
   )
 
   attr(pred, "interval") <- interval

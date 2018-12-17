@@ -22,7 +22,7 @@ safe_predict.cv.glmnet <- function(
 
   # MK Should `threshold` be here? It's only applicable to 2 class models.
 
-  rule <- match.arg(rule)
+  rule <- arg_match(rule)
   rule <- if (rule == "1-se") "lambda.1se" else "lambda.min"
 
   safe_predict.glmnet(

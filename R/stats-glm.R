@@ -55,7 +55,7 @@ safe_predict.glm <- function(
   ## input validation
 
   new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   validate_logical(std_error)
   validate_probability(level)

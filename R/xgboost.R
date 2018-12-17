@@ -12,22 +12,20 @@ safe_predict.xgb.Booster <- function(
   # the following seems to mess things up, perhaps because of how missingness
   # is encoded
   # new_data <- to_xgb_input(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   pred <- xgb_pred(object, new_data)
   return(as_tibble(pred))
 
   # another early exit to get to MVP stage ASAP
 
-  ## TODO: dispatch on type
-  if (type == "response")
-    predict_xgb_response(object, new_data)
-  else if (type == "class")
-    predict_xgb_class(object, new_data)
-  else if (type == "prob")
-    predict_xgb_prob(object, new_data)
-  else
+  switch(
+    type,
+    "response" = predict_earth_response(object, new_data),
+    "class" = predict_earth_class(object, new_data, threshold),
+    "prob" = predict_earth_prob(object, new_data),
     no_method_for_type_error()
+  )
 }
 
 to_xgb_input <- function(data) {

@@ -25,7 +25,7 @@ multi_predict.glmnet <- function(
   ## input validation
 
   new_data <- Matrix::as.matrix(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   # TODO: some validation on the hyperparameter grid.
   # return some vector of penalties to consider

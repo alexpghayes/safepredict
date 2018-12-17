@@ -30,7 +30,7 @@ safe_predict.glmnet <- function(
   ## input validation
 
   new_data <- Matrix::as.matrix(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   if (is.null(penalty) || length(penalty) > 1)
     stop(

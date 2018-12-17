@@ -10,7 +10,7 @@ safe_predict.randomForest <- function(
   ...) {
 
   new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   if (type %in% c("response", "class"))
     predict_rf_helper(object, new_data)

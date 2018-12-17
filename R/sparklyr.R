@@ -11,7 +11,7 @@ safe_predict.ml_model <- function(
   ),
   ...) {
 
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   use_suggested_package("sparklyr")
   pred <- sparklyr::ml_predict(object, dataset = new_data)
