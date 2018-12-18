@@ -1,10 +1,35 @@
-context("test-stats-loess")
-
-suggest_fable <- function(...) {
-  glubort("We recommend using the `fable` package for {class(object)[1]} objects")
+#' Predictions from time series models
+#'
+#' Gracefully error out and suggest using `sweep` instead, with some code
+#' examples of what that looks like.
+#'
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+suggest_sweep <- function(object, ...) {
+  cls <- class(object)[1]
+  glubort("We recommend using the `sweep` package for {cls} objects.")
 }
 
-# times series classes: error out and suggest forecast / fable / whatever
+#' @rdname suggest_sweep
+#' @export
+safe_predict.ar <- suggest_sweep
 
-# at, Arima, Arima0, HoltWinters
+#' @rdname suggest_sweep
+#' @export
+safe_predict.Arima <- suggest_sweep
 
+#' @rdname suggest_sweep
+#' @export
+safe_predict.Arima0 <- suggest_sweep
+
+#' @rdname suggest_sweep
+#' @export
+safe_predict.HoltWinters <- suggest_sweep
+
+#' @rdname suggest_sweep
+#' @export
+safe_predict.StructTS <- suggest_sweep

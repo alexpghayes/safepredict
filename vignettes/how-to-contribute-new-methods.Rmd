@@ -1,0 +1,60 @@
+---
+title: "How to contribute new methods"
+author: "Alex Hayes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## what needs to happen in each safe_predict method
+
+check for suggested packages if you rely on those
+
+## reference implementations
+
+see `safe_predict.lm()` for example
+
+# document if you successfully deal with:
+
+- missing data
+
+# tests
+
+
+```{r}
+## function signature
+
+## input validation works
+
+# - error on missing `new_data`
+# - error on bad `type`
+# - error on bad `std_error`
+# - error on bad `level` - include 0 or 1
+# - warning on mispelled argument (via ellipsis)
+
+## input edge cases
+
+# - missing data
+# - spline trap
+# - single observation
+# - repeated observations
+
+## checks on returned predictions
+
+# - correct class given type
+# - in a tibble
+# - correct number of rows
+# - level and interval attributes for type = conf_int and type = pred_int
+# - correct column names given type
+
+```

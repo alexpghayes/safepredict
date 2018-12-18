@@ -28,6 +28,10 @@ The goal of safepredict is to provide consistent predictions via the `safe_predi
 - never drops rows with missing data.
 - follows a consistent naming convention.
 
+The goal is to eventually meet the full [tidymodels prediction specification][pred_spec].
+
+[pred_spec]: https://tidymodels.github.io/model-implementation-principles/model-predictions.html
+
 ## Installation
 
 `safepredict` is currently in the beginning stages of development and is available only on Github. You can install it with:
@@ -36,6 +40,70 @@ The goal of safepredict is to provide consistent predictions via the `safe_predi
 # install.packages("devtools")
 devtools::install_github("alexpghayes/safepredict")
 ```
+
+## Conventions
+
+Arguments:
+
+- `object`
+- `new_data` not data. *required*, you will get an error otherwise. The data requirements for `new_data` should be the same as those for the orginal model fit function. 
+- `type`
+
+    | type         	| application                                 	|
+    |--------------	|---------------------------------------------	|
+    | `response`   	| numeric predictions                         	|
+    | `class`      	| hard class predictions                      	|
+    | `prob`       	| class probabilities, survivor probabilities 	|
+    | `link`       	| `glm` linear predictor                      	|
+    | `conf_int`   	| confidence intervals                        	|
+    | `pred_int`   	| prediction intervals                        	|
+    | `raw`        	| direct access to prediction function        	|
+    | `param_pred` 	| predictions across tuning parameters        	|
+    | `quantile`    | quantile predictions                          |
+    
+  
+    This is validated using `rlang::arg_match()` to prevent silent errors.
+  
+- `level`
+- `std_error` argument that takes on `TRUE/FALSE` value. By default, do not report standard error or other measures of uncertainty, as these can be expensive to compute. Clearly document whether any standard errors are for confidence or prediction intervals.
+
+## Features
+
+- clear documentation about when you're getting confidence vs prediction intervals
+- always a pointer to a method that will let you assess uncertainty in your prediction if prediction intervals are not available
+- always preserves missing data, or errors out informatively
+
+- won't explode if you:
+
+  - have a single row
+  - have lots of rows
+  
+- full support of splines (i.e. doesn't get caught in the splines trap)
+
+## Things that are hard to fully support
+
+- When novel factor levels appear in the test set for factor predictors, the default behavior should be to throw an informative error. For models where this is a reasonable way to make predictions on novel factor levels, users need to explicitly specify that they want this behavior, and it's good practice to `message()` for these prediction cases.
+
+- Predictions on same scale as outcome, of same type (i.e. factor / numeric)
+
+## Return Values
+
+- The return value is a tibble with the **same number of rows as the data being predicted** and in the same order. 
+
+- Interval attributes
+
+- Missing data always specified as `NA` (i.e. never `Inf` or `NaN`) -- write a test for this
+
+Columns naming:
+
+
+   * For univariate, numeric point estimates, the column should be named `.pred`. For multivariate numeric predictions (excluding probabilities), the columns should be named `.pred_{outcome name}`.
+      
+   * Class predictions should be factors with the same levels as the original outcome and named `.pred_class`. 
+   
+   * For class probability predictions, the columns should be named the same as the factor levels, e.g., `.pred_{level}`, and there should be as many columns as factor levels. 
+ 
+   * If interval estimates are produced (e.g. prediction/confidence/credible), the column names should be `.pred_lower` and `.pred_upper`. If a standard error is produced, the column should be named `.std_error`. If intervals are produced for class probabilities, the levels should be included (e.g., `.pred_lower_{level}`)
 
 ## Examples
 
@@ -50,6 +118,12 @@ data <- tibble(
 )
 
 fit <- glm(y ~ x, data, family = binomial)
+```
+
+Errors are caught: **TODO**: Use `ellipsis` to prevent `conf.level` errors
+
+```{r}
+
 ```
 
 You can predict class probabilities:
@@ -80,8 +154,3 @@ or we can get confidence intervals on the response scale
 ```{r}
 safe_predict(fit, new_data = test, type = "conf_int")
 ```
-
-## Conventions
-
-`safepredict` is based on a conventions document that is currently in progress and private. Once conventions are finalized, they'll appear here.
-
