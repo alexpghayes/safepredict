@@ -6,7 +6,7 @@
 #'
 #'   - `"response"` (default): Standard predictions from non-linear regression.
 #'
-#' @return TODO
+#' @template return
 #'
 #' @export
 #'

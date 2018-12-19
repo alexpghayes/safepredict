@@ -1,0 +1,24 @@
+---
+title: "Tidy workflows using yardstick and tidyposterior"
+author: "Alex Hayes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tidy workflows using yardstick and tidyposterior}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+some examples of how these packages should work together
+
+a walk-through of how to actually compare the predictive performance of different methods, taking uncertainty into account
+
+tidyposterior?
+something like my blog post?

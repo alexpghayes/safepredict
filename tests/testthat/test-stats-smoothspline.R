@@ -34,7 +34,7 @@ test_that("default type", {
   check_predict_output(default_preds, mtcars$mpg, type = "response")
 })
 
-# in general `smooth.spline` isn't worth full testing since it's barely
+# in general `smooth.spline` isn't worth fully testing since it's barely
 # implemented, so we keep it short here
 
 test_that("type = \"response\"", {

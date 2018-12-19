@@ -1,10 +1,10 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Assessing prediction uncertainty with the bootstrap"
+author: "Alex Hayes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Assessing prediction uncertainty with the bootstrap}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,141 @@ knitr::opts_chunk$set(
 )
 ```
 
+This vignette walks demonstrates how to estimate uncertainty in predictions via the bootstrap. We use [`rsample`](https://tidymodels.github.io/rsample/) throughout. First we show how to calculate confidence intervals, and then how to calculate predictive intervals. If you are unfamiliar with the difference between these two, we highly recommend that you read `vignette("intervals", package = "safepredict")`.
 
-## bootstraps for conditional means
+Throughout this vignette we use the nonparametric bootstrap, which is more robust than the parametric bootstrap and does not require us to assumption that we have a correctly specified model. The parametric bootstrap will give you tighter intervals than the procedures we outline here, but we recommend against this unless you are  *very, very* certain that you have correctly specified your model.
+
+## Bootstrapped confidence intervals
+
+for continuous outcomes. what to do if you only had hard class predictions? multinomial proportions stuff
+
+UGH THINK ABOUT THIS. this is like out of bag confidence intervals
+
+Let $X$ be the original data (containing both predictors and outcome). Split it into a training set $X_0$ and a test set $X'$.
+
+1. Sample the rows of $X_0$ with replacement $1, ..., B$ times to create bootstrapped data sets $X_1^*, ..., X_B^*$.
+2. Fit your model of choice on each bootstrapped data set and obtain fits $\hat f_1, ..., \hat f_B$.
+3. Predict the mean at $X'$ with each $\hat f_i$ to get samples from the sampling distribution of $f(X')$.
+4. Look at the appropriate quantiles of $f(X')$. You're done!
+
+bootstrap out of sample estimate
+
+The OOB estimate, which 
+
+algorithm:
+
+1. fit a bunch of bootstrapped models
+2. predict the mean with each of the bootstrapped models
+3. look at the quantiles of these predictions
+
+```{r}
+library(tidymodels)
+library(safepredict)
+
+set.seed(27)
+
+attrition <- attrition %>% 
+  sample_n(200)
+
+glimpse(attrition)
+```
+
+```{r}
+rec <- recipe(Attrition ~ ., data = attrition) %>%
+  step_center(all_numeric()) %>%
+  step_scale(all_numeric()) %>% 
+  step_dummy(all_nominal(), -Attrition) %>% 
+  prep()
+
+rec
+
+x <- juice(rec, all_predictors(), composition = "matrix")
+y <- juice(rec, all_outcomes())$Attrition
+```
+
+```{r}
+head(x)
+```
+
+```{r}
+head(y)
+```
+
+
+
+```{r}
+library(glmnet)
+
+fit <- cv.glmnet(x, y, family = "binomial")
+pred <- safe_predict(fit, x, type = "prob")
+```
+
+quick viz
+
+```{r}
+x %>% 
+  as_tibble() %>% 
+  bind_cols(pred) %>% 
+  ggplot(aes(DistanceFromHome, .pred_Yes)) +
+  geom_jitter(alpha = 0.5) +
+  theme_bw()
+```
+
+```{r}
+boots <- bootstraps(attrition, times = 10, strata = "Attrition")
+
+fits <- boots %>% 
+  mutate(
+    prepped = map(splits, prepper, rec),
+    x_train = map(prepped, ~juice(.x, all_predictors(), composition = "matrix")),
+    y_train = map(prepped, ~juice(.x, all_outcomes())$Attrition),
+    model = map2(x_train, y_train, cv.glmnet, family = "binomial")
+  )
+
+boot_preds <- fits %>% 
+  mutate(
+    preds = map(model, safe_predict, x, type = "prob"),
+    preds = map(preds, add_id_column)
+  ) %>% 
+  unnest(preds, .id = "model")
+```
+
+90 percent confidence interval
+
+```{r}
+pred_ci <- boot_preds %>% 
+  group_by(.id) %>% 
+  summarize(
+    .pred_Yes_lower = quantile(.pred_Yes, 0.05),
+    .pred_Yes_upper = quantile(.pred_Yes, 0.95)
+  )
+```
+
+and if we want to bind those to our original predictions we would o
+
+```{r}
+pred_ci %>% 
+  bind_cols(pred) %>% 
+  select(-.pred_No)
+```
 
 ## bootstrapping for *predictive* intervals
+
+Let $X$ be the original data (containing both predictors and outcome). Split it into a training set $X_0$ and a test set $X'$.
+
+**TODO**: totally made up the new steps, need to sanity check everything here
+
+0. **NEW STEP**: calculate residuals $\varepsilon$. (how to do this for class probabilities?)
+
+1. Sample the rows of $X_0$ with replacement $1, ..., B$ times to create bootstrapped data sets $X_1^*, ..., X_B^*$.
+2. Fit your model of choice on each bootstrapped data set and obtain fits $\hat f_1, ..., \hat f_B$.
+3. Predict the mean at $X'$ with each $\hat f_i$ to get samples from the sampling distribution of $f(X')$.
+4. **NEW STEP**: but was only the mean at $f(X')$ we really want a prediction. so we need to add noise. add a random residual from $\varepsilon$.
+4. Look at the appropriate quantiles of $f(X')$. You're done!
+
+## References
+
+https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20130014367.pdf
+
+https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval
+

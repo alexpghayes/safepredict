@@ -17,7 +17,31 @@
 }}
 }
 \value{
-TODO
+A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
+Predictions for observations with missing data will be \code{NA}. Returned
+tibble has different columns depending on \code{type}:
+\itemize{
+\item \code{"response"}:
+\itemize{
+\item univariate outcome: \code{.pred} (numeric)
+\item multivariate outcomes: \code{.pred_{outcome name}} (numeric) for each
+outcome
+}
+\item \code{"class"}: \code{.pred_class} (factor)
+\item \code{"prob"}: \code{.pred_{level}} columns (numerics between 0 and 1)
+\item \code{"link"}: \code{.pred} (numeric)
+\item \code{"conf_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
+\item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
+}
+
+If you request standard errors with \code{std_error = TRUE}, an additional
+column \code{.std_error}.
+
+For interval predictions, the tibble has additional attributes \code{level}
+and \code{interval}. The \code{level} is the same as the \code{level} argument and is
+between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
+Some models may also set a \code{method} attribute to detail the method
+used to calculate the intervals.
 }
 \description{
 Safe predictions from an nls object

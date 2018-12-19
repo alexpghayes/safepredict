@@ -2,36 +2,23 @@
 % Please edit documentation in R/stats-mlm.R
 \name{safe_predict.mlm}
 \alias{safe_predict.mlm}
-\title{Safe predictions from a multiple linear model}
+\title{Safe predictions from a multiple linear model object}
 \usage{
 \method{safe_predict}{mlm}(object, new_data, type = c("response"), ...)
 }
 \arguments{
 \item{object}{An \code{mlm} object returned from a call to \code{\link[stats:lm]{stats::lm()}}.}
 
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
+\item{new_data}{\strong{Required}. A data frame or matrix containing the
+necessary predictors.}
 
 \item{type}{What kind of predictions to return. Options are:
 \itemize{
-\item \code{"response"} (default): Standard predictions from linear regression.
-\item \code{"conf_int"}: Fitted values plus a confidence interval for the fit.
-\item \code{"pred_int"}: Predictions with accompanying prediction interval.
+\item \code{"response"} (default): Standard predictions from multiple regression.
 }}
-
-\item{...}{Unused.}
-
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
 }
 \value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
+A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
 Predictions for observations with missing data will be \code{NA}. Returned
 tibble has different columns depending on \code{type}:
 \itemize{
@@ -48,6 +35,9 @@ outcome
 \item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
 }
 
+If you request standard errors with \code{std_error = TRUE}, an additional
+column \code{.std_error}.
+
 For interval predictions, the tibble has additional attributes \code{level}
 and \code{interval}. The \code{level} is the same as the \code{level} argument and is
 between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
@@ -55,29 +45,30 @@ Some models may also set a \code{method} attribute to detail the method
 used to calculate the intervals.
 }
 \description{
-Safe predictions from a multiple linear model
-}
-\details{
-Do not use on model objects that only subclass \code{lm}. This will result
-in an error.
+Safe predictions from a multiple linear model object
 }
 \section{Estimating uncertainty}{
 
-\itemize{
-\item bootstrap
-}
+
+\code{\link[stats:predict.mlm]{stats::predict.mlm()}} provides neither confidence nor prediction
+intervals, although there is not theoretical issue with calculating
+these.
+
+At some point in the future we may implement these intervals within
+\code{safepredict}. If you are interested in this, you can move intervals
+for \code{mlm} objects up the priority list by opening an issue on
+\href{https://github.com/alexpghayes/safepredict}{Github}.
 }
 
 \examples{
 
-fit <- lm(hp ~ ., mtcars)
+fit <- lm(cbind(hp, mpg) ~ ., mtcars)
 
 safe_predict(fit, mtcars)
 
 mt2 <- mtcars
-diag(mt2) <- NA  # overly aggressive
+diag(mt2) <- NA
 
-safe_predict(fit, mt2, std_error = TRUE)
-safe_predict(fit, mt2, type = "pred_int", level = 0.9)
+safe_predict(fit, mt2)
 
 }

@@ -9,7 +9,6 @@ safe_predict.keras <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   new_data <- as.matrix(new_data)

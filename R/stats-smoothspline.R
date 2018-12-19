@@ -6,7 +6,8 @@
 #' @param object A `smooth.spline` object returned from a call to
 #'  [stats::smooth.spline()].
 #'
-#' @param new_data A numeric vector. Can contain `NA`s.
+#' @param new_data A numeric vector. Can contain `NA`s, although the presence
+#'  of any `NA`s may slow down prediction.
 #'
 #' @param type What kind of predictions to return. Options are:
 #'
@@ -77,7 +78,7 @@ safe_predict.smooth.spline <- function(
       if (!is.numeric(pred) || !(length(pred) == 1)) NA else pred
     }
 
-    vapply(new_data, predict_or_na, numeric(1))
+    tibble(.pred = vapply(new_data, predict_or_na, numeric(1)))
   } else {
     tibble(.pred = predict(object, new_data)$y)
   }

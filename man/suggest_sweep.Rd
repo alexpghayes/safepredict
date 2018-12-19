@@ -9,22 +9,28 @@
 \alias{safe_predict.StructTS}
 \title{Predictions from time series models}
 \usage{
-suggest_sweep(object, ...)
+suggest_sweep(object, new_data, type, ...)
 
-\method{safe_predict}{ar}(object, ...)
+\method{safe_predict}{ar}(object, new_data, type, ...)
 
-\method{safe_predict}{Arima}(object, ...)
+\method{safe_predict}{Arima}(object, new_data, type, ...)
 
-\method{safe_predict}{Arima0}(object, ...)
+\method{safe_predict}{Arima0}(object, new_data, type, ...)
 
-\method{safe_predict}{HoltWinters}(object, ...)
+\method{safe_predict}{HoltWinters}(object, new_data, type, ...)
 
-\method{safe_predict}{StructTS}(object, ...)
+\method{safe_predict}{StructTS}(object, new_data, type, ...)
 }
 \arguments{
-\item{...}{}
+\item{object}{Ignored.}
+
+\item{new_data}{Ignored.}
+
+\item{type}{Ignored.}
+
+\item{...}{Ignored.}
 }
 \description{
-Gracefully error out and suggest using \code{sweep} instead, with some code
-examples of what that looks like.
+\code{safepredict} does not support time series models. We recommend using
+\link[sweep:sweep_package]{sweep}.
 }

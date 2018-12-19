@@ -1,32 +1,38 @@
-#' Safe predictions from a multiple linear model
+#' Safe predictions from a multiple linear model object
 #'
 #' @param object An `mlm` object returned from a call to [stats::lm()].
 #'
-#' @param type What kind of predictions to return. Options are:
-#'   - `"response"` (default): Standard predictions from linear regression.
-#'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
-#'   - `"pred_int"`: Predictions with accompanying prediction interval.
-#' @template boilerplate
+#' @param new_data **Required**. A data frame or matrix containing the
+#'  necessary predictors.
 #'
-#' @details Do not use on model objects that only subclass `lm`. This will result
-#'   in an error.
+#' @param type What kind of predictions to return. Options are:
+#'
+#'   - `"response"` (default): Standard predictions from multiple regression.
+#'
+#' @template return
 #'
 #' @section Estimating uncertainty:
 #'
-#' - bootstrap
+#'  [stats::predict.mlm()] provides neither confidence nor prediction
+#'  intervals, although there is not theoretical issue with calculating
+#'  these.
+#'
+#'  At some point in the future we may implement these intervals within
+#'  `safepredict`. If you are interested in this, you can move intervals
+#'  for `mlm` objects up the priority list by opening an issue on
+#'  [Github](https://github.com/alexpghayes/safepredict).
 #'
 #' @export
 #' @examples
 #'
-#' fit <- lm(hp ~ ., mtcars)
+#' fit <- lm(cbind(hp, mpg) ~ ., mtcars)
 #'
 #' safe_predict(fit, mtcars)
 #'
 #' mt2 <- mtcars
-#' diag(mt2) <- NA  # overly aggressive
+#' diag(mt2) <- NA
 #'
-#' safe_predict(fit, mt2, std_error = TRUE)
-#' safe_predict(fit, mt2, type = "pred_int", level = 0.9)
+#' safe_predict(fit, mt2)
 #'
 safe_predict.mlm <- function(
   object,

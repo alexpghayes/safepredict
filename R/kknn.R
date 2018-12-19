@@ -9,7 +9,6 @@ safe_predict.train.kknn <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   # avoid bad match.arg() default for classification problems

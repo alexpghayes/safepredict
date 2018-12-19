@@ -54,7 +54,6 @@ safe_predict.glm <- function(
 
   ## input validation
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   validate_logical(std_error)
@@ -112,7 +111,7 @@ predict_glm_link <- function(object, new_data, std_error) {
 
     pred <- tibble(
       .pred = pred_list$fit,
-      .pred_std_error = pred_list$se.fit
+      .std_error = pred_list$se.fit
     )
   }
 
@@ -125,8 +124,10 @@ predict_glm_confint <- function(object, new_data, level, std_error) {
   # then applies the inverse link to transform this confidence interval to
   # response scale.
 
-  pred_se <- predict_glm_link(object, new_data, std_error = TRUE)
-  pred <- pred_se_to_confint(pred_se, level, std_error)
+  # TODO: pass df for better intervals in the low-data case
+
+  pred_link <- predict_glm_link(object, new_data, std_error = TRUE)
+  pred <- safe_confint(pred_link$.pred, pred_link$.std_error, level)
   pred <- dplyr::mutate_all(pred, object$family$linkinv)
   pred
 }
@@ -150,6 +151,8 @@ predict_glm_binomial <- function(object, new_data, type, threshold) {
 
   raw <- predict(object, new_data, na.action = na.pass, type = "response")
 
+  # use probably::make_two_class_pred() here
+  # and use probably::make_class_pred() in the multinomial case
   binomial_helper(
     raw = raw,
     levels = lvls,

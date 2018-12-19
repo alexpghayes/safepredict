@@ -21,20 +21,17 @@ set.seed(27)
 [![Coverage status](https://codecov.io/gh/alexpghayes/safepredict/branch/master/graph/badge.svg)](https://codecov.io/github/alexpghayes/safepredict?branch=master)
 [![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 
+`safepredict` has two goals: to provide a consistent interface to prediction via the `safe_predict()` generic, and to accurately quantify prediction uncertainty.
 
-The goal of safepredict is to provide consistent predictions via the `safe_predict()` generic. `safe_predict()`:
+`safe_predict()`:
 
 - always returns a tibble.
 - never drops rows with missing data.
-- follows a consistent naming convention.
+- always uses the same arguments in the same order.
 
-The goal is to eventually meet the full [tidymodels prediction specification][pred_spec].
+`safepredict` follows the [tidymodels prediction specification][pred_spec].
 
 [pred_spec]: https://tidymodels.github.io/model-implementation-principles/model-predictions.html
-
-## Before you get started
-
-it's possible you are trying to solve a problem that's already been solved. go checkout [`parsnip`](https://tidymodels.github.io/parsnip/).
 
 ## Installation
 
@@ -45,13 +42,16 @@ it's possible you are trying to solve a problem that's already been solved. go c
 devtools::install_github("alexpghayes/safepredict")
 ```
 
-## Conventions
+## Arguments
 
-Arguments:
+The three main arguments to `safe_predict()` are always the same:
 
-- `object`
-- `new_data` not data. *required*, you will get an error otherwise. The data requirements for `new_data` should be the same as those for the orginal model fit function. 
-- `type`
+- `object`: A model object you would like to get predictions from.
+
+- `new_data`: **Required**. Data in the same format as required for the
+  `predict()` method.
+
+- `type`: What kind of predictions you would like. Options are:
 
     | type         	| application                                 	|
     |--------------	|---------------------------------------------	|
@@ -61,54 +61,7 @@ Arguments:
     | `link`       	| `glm` linear predictor                      	|
     | `conf_int`   	| confidence intervals                        	|
     | `pred_int`   	| prediction intervals                        	|
-    | `raw`        	| direct access to prediction function        	|
-    | `param_pred` 	| predictions across tuning parameters        	|
-    | `quantile`    | quantile predictions                          |
-    
   
-    This is validated using `rlang::arg_match()` to prevent silent errors.
-  
-- `level`
-- `std_error` argument that takes on `TRUE/FALSE` value. By default, do not report standard error or other measures of uncertainty, as these can be expensive to compute. Clearly document whether any standard errors are for confidence or prediction intervals.
-
-## Features
-
-- clear documentation about when you're getting confidence vs prediction intervals
-- always a pointer to a method that will let you assess uncertainty in your prediction if prediction intervals are not available
-- always preserves missing data, or errors out informatively
-
-- won't explode if you:
-
-  - have a single row
-  - have lots of rows
-  
-- full support of splines (i.e. doesn't get caught in the splines trap)
-
-## Things that are hard to fully support
-
-- When novel factor levels appear in the test set for factor predictors, the default behavior should be to throw an informative error. For models where this is a reasonable way to make predictions on novel factor levels, users need to explicitly specify that they want this behavior, and it's good practice to `message()` for these prediction cases.
-
-- Predictions on same scale as outcome, of same type (i.e. factor / numeric)
-
-## Return Values
-
-- The return value is a tibble with the **same number of rows as the data being predicted** and in the same order. 
-
-- Interval attributes
-
-- Missing data always specified as `NA` (i.e. never `Inf` or `NaN`) -- write a test for this
-
-Columns naming:
-
-
-   * For univariate, numeric point estimates, the column should be named `.pred`. For multivariate numeric predictions (excluding probabilities), the columns should be named `.pred_{outcome name}`.
-      
-   * Class predictions should be factors with the same levels as the original outcome and named `.pred_class`. 
-   
-   * For class probability predictions, the columns should be named the same as the factor levels, e.g., `.pred_{level}`, and there should be as many columns as factor levels. 
- 
-   * If interval estimates are produced (e.g. prediction/confidence/credible), the column names should be `.pred_lower` and `.pred_upper`. If a standard error is produced, the column should be named `.std_error`. If intervals are produced for class probabilities, the levels should be included (e.g., `.pred_lower_{level}`)
-
 ## Examples
 
 Suppose you fit a logistic regression using `glm`:
@@ -122,12 +75,6 @@ data <- tibble(
 )
 
 fit <- glm(y ~ x, data, family = binomial)
-```
-
-Errors are caught: **TODO**: Use `ellipsis` to prevent `conf.level` errors
-
-```{r}
-
 ```
 
 You can predict class probabilities:
@@ -148,7 +95,6 @@ safe_predict(fit, new_data = test, type = "class")
 
 We can also get predictions on the link scale:
 
-
 ```{r}
 safe_predict(fit, new_data = test, type = "link")
 ```
@@ -158,3 +104,13 @@ or we can get confidence intervals on the response scale
 ```{r}
 safe_predict(fit, new_data = test, type = "conf_int")
 ```
+
+## Related work
+
+- [`parsnip`](https://tidymodels.github.io/parsnip/) provides a consistent interface to supervised models. Eventually `safepredict` will act as the prediction backend for `parsnip`.
+
+- [`broom`](https://broom.tidyverse.org/) summarizes key information about models in tidy tibbles.
+
+- The many ongoing [`tidymodels`](https://github.com/tidymodels) projects.
+
+- The [`prediction`](https://github.com/leeper/prediction) package by Thomas Leeper. `prediction` supports a much wider variety of models than `safepredict` at the moment, but makes fewer consistency guarantees.

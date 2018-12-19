@@ -8,7 +8,6 @@ safe_predict.nnet <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   if (type == "response")

@@ -1,0 +1,31 @@
+template:
+  package: tidytemplate
+  params:
+    part_of: <a href="https://github.com/tidymodels">tidymodels</a>
+    footer: probably is a part of the <strong>tidymodels</strong> ecosystem, a collection of modeling packages designed with common APIs and a shared philosophy.
+
+development:
+  mode: auto
+
+home:
+  strip_header: true
+
+reference:
+- title: All functions
+  desc: ~
+  contents:
+  - '`binomial_helper`'
+  - '`multi_predict.cv.glmnet`'
+  - '`multi_predict.glmnet`'
+  - '`multi_predict`'
+  - '`predict_or_na`'
+  - '`safe_predict.cv.glmnet`'
+  - '`safe_predict.glm`'
+  - '`safe_predict.glmnet`'
+  - '`safe_predict.lm`'
+  - '`safe_predict.loess`'
+  - '`safe_predict.mlm`'
+  - '`safe_predict.model_fit`'
+  - '`safe_predict.nls`'
+  - '`safe_predict`'
+  - '`safe_predict.smooth.spline`'

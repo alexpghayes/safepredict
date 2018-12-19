@@ -11,7 +11,6 @@ safe_predict.earth <- function(
   threshold = 0.5,
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   pred <- predict(object, new_data, type = "response")

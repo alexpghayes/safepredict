@@ -8,7 +8,6 @@ safe_predict.C5.0 <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   pred <- predict(object, new_data, type = type, na.action = na.pass)

@@ -10,7 +10,6 @@ safe_predict.stanreg <- function(
   level = 0.95,
   ...) {
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   pred <- predict(object, new_data, type = "response")

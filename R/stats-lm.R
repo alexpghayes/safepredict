@@ -23,7 +23,7 @@
 #' safe_predict(fit, mtcars)
 #'
 #' mt2 <- mtcars
-#' diag(mt2) <- NA  # overly aggressive
+#' diag(mt2) <- NA
 #'
 #' safe_predict(fit, mt2, std_error = TRUE)
 #' safe_predict(fit, mt2, type = "pred_int", level = 0.9)

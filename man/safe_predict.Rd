@@ -2,13 +2,10 @@
 % Please edit documentation in R/safepredict-package.R
 \name{safe_predict}
 \alias{safe_predict}
-\alias{safe_predict.default}
 \title{Safely predict from a model object}
 \usage{
 safe_predict(object, new_data, type = NULL, ..., level = 0.95,
   std_error = FALSE)
-
-\method{safe_predict}{default}(object, ...)
 }
 \arguments{
 \item{object}{An object or model you would like to get predictions from.}

@@ -62,6 +62,7 @@ use_suggested_package <- function(pkg_name) {
     glubort("Must install the {pkg_name} packge in order to use this function.")
 }
 
+#' @export
 add_id_column <- function(data) {
   tibble::add_column(data, .id = 1:nrow(data), .before = TRUE)
 }

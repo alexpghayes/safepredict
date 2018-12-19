@@ -1,6 +1,10 @@
-pandoc: 1.19.2.1
-pkgdown: 1.1.0
+pandoc: 2.3.1
+pkgdown: 1.3.0
 pkgdown_sha: ~
 articles:
-  predicting-across-sub-models: predicting-across-sub-models.html
+  bootstrapping: bootstrapping.html
+  contributing: contributing.html
+  intervals: intervals.html
+  novel-factor-levels: novel-factor-levels.html
+  yardstick: yardstick.html
 

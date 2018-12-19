@@ -11,29 +11,16 @@
 \item{object}{A \code{smooth.spline} object returned from a call to
 \code{\link[stats:smooth.spline]{stats::smooth.spline()}}.}
 
-\item{new_data}{Gotta be a vector: TODO}
+\item{new_data}{A numeric vector. Can contain \code{NA}s, although the presence
+of any \code{NA}s may slow down prediction.}
 
 \item{type}{What kind of predictions to return. Options are:
 \itemize{
-\item \code{"response"} (default): Standard predictions from non-linear regression.
+\item \code{"response"} (default): Standard predictions from smoothing splines.
 }}
-
-\item{...}{Unused.}
-
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
-
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
 }
 \value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
+A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
 Predictions for observations with missing data will be \code{NA}. Returned
 tibble has different columns depending on \code{type}:
 \itemize{
@@ -50,6 +37,9 @@ outcome
 \item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
 }
 
+If you request standard errors with \code{std_error = TRUE}, an additional
+column \code{.std_error}.
+
 For interval predictions, the tibble has additional attributes \code{level}
 and \code{interval}. The \code{level} is the same as the \code{level} argument and is
 between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
@@ -57,19 +47,54 @@ Some models may also set a \code{method} attribute to detail the method
 used to calculate the intervals.
 }
 \description{
-Recommendation: use \code{\link[mgcv:gam]{mgcv::gam()}} instead, it will make your life way
-better.
+We \strong{strongly recommend} using \code{\link[mgcv:gam]{mgcv::gam()}} instead of \code{smooth.spline()}.
+\code{mgcv} provides a feature-rich and frequently updated GAM implementation.
 }
-\details{
-\code{deriv} argument is not supported. Use \code{\link[gratia:fderiv]{gratia::fderiv()}} for this
-instead.
+\section{Uncertainty in predictions}{
 
-Recommendation: use \code{\link[mgcv:gam]{mgcv::gam()}} instead. For example, the following
-are about equivalent:\preformatted{TODO
+
+If you use \code{mgcv}, \code{\link[mgcv:predict.gam]{mgcv::predict.gam()}} has a \code{se.fit} argument
+that will allow you get standard errors for predictions.
+
+If you insist on using \code{smooth.spline()}, your best bet to estimate
+uncertainty in predictions is bootstrapping. See\preformatted{vignette("bootstrapping", package = "safepredict")
 }
 
-Alternatively, you can get uncertainty with bootstrapping
+for worked examples and details on how you might do this.
 }
+
+\section{Derivatives of smooths}{
+
+
+While \code{\link[stats:::predict.smooth.spline]{stats::::predict.smooth.spline()}} has a \code{deriv} argument we
+do not support it. If you would like to estimate derivates of smooths we
+recommend using the \code{gratia} package, and in particular \code{\link[gratia:fderiv]{gratia::fderiv()}}.
+At the time of writing, \code{gratia} is not yet on CRAN, but can be installed
+from Github with \code{devtools::install_github(gavinsimpson/gratia)}.
+Additional documentation on \code{gratia} is available
+\href{https://gavinsimpson.github.io/gratia/}{here}.
+}
+
 \examples{
+
+fit <- smooth.spline(mtcars$mpg, mtcars$wt, cv = TRUE)
+safe_predict(fit, c(30, NA, 40))
+
+# the following will fail, however
+\dontrun{
+predict(fit, c(30, NA, 40))
+}
+
+# however, we recommend using mgcv instead
+library(mgcv)
+
+fit2 <- gam(mpg ~ s(wt), data = mtcars)
+predict(fit2, mtcars)  # TODO: update with safe_predict once implemented
+
+# to get estimated derivatives from smooths use gratia,
+# which extends mgcv
+
+library(gratia)  # TODO: gratia isn't on CRAN yet
+fderiv(fit2)
 
 }
