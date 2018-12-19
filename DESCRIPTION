@@ -9,8 +9,9 @@ Authors@R:
              comment = c(ORCID = "0000-0002-4985-5160")),
       person(given = "RStudio",
              role = "cph"))
-Description: Provides the safe_predict() generic, a consistent interface to
-    prediction that meets that tidymodels prediction specification.
+Description: Provides the safe_predict() generic, a consistent
+    interface to prediction that meets that tidymodels prediction
+    specification.
 License: MIT + file LICENSE
 URL: https://github.com/alexpghayes/safepredict
 BugReports: https://github.com/alexpghayes/safepredict/issues
@@ -20,18 +21,22 @@ Imports:
     dplyr,
     ellipsis (>= 0.0.1),
     glue,
+    probably,
     purrr,
     rlang,
     tibble
 Suggests: 
     covr,
+    ggplot2,
     glmnet,
     knitr,
     mgcv,
     ranger,
+    recipes,
     rmarkdown,
+    rsample,
     testthat,
-    probably
+    tidyr
 VignetteBuilder: 
     knitr
 Remotes: 

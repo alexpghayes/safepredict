@@ -44,18 +44,20 @@ algorithm:
 3. look at the quantiles of these predictions
 
 ```{r}
-library(tidymodels)
-library(safepredict)
+library(dplyr)
+library(rsample)
 
 set.seed(27)
 
 attrition <- attrition %>% 
-  sample_n(200)
+  sample_n(300)
 
 glimpse(attrition)
 ```
 
 ```{r}
+library(recipes)
+
 rec <- recipe(Attrition ~ ., data = attrition) %>%
   step_center(all_numeric()) %>%
   step_scale(all_numeric()) %>% 
@@ -80,6 +82,7 @@ head(y)
 
 ```{r}
 library(glmnet)
+library(safepredict)
 
 fit <- cv.glmnet(x, y, family = "binomial")
 pred <- safe_predict(fit, x, type = "prob")
@@ -88,6 +91,8 @@ pred <- safe_predict(fit, x, type = "prob")
 quick viz
 
 ```{r}
+library(ggplot2)
+
 x %>% 
   as_tibble() %>% 
   bind_cols(pred) %>% 
@@ -97,6 +102,9 @@ x %>%
 ```
 
 ```{r}
+library(purrr)
+library(tidyr)
+
 boots <- bootstraps(attrition, times = 10, strata = "Attrition")
 
 fits <- boots %>% 
