@@ -1,45 +1,70 @@
-safe_tibble <- function(df) {
-  # try to coerce to a tibble
-  # give an informative error on failure
 
 
-  if (!inherits(df, "data.frame"))
-    stop("`newdata` argument must be a data frame.")
-  df
+#' Predict at a single observation or return NA
+#'
+#' A painful and inefficient hack to bring missing value support to the most
+#' desperate cases.
+#'
+#' @param object Object to calculate predictins from.
+#' @param obs A single observation to get a prediction at.
+#'
+#' @return A numeric vector of length one containing a prediction, or `NA` if
+#'  prediction is not successful.
+#'
+#' @examples
+#'
+#' # doesn't support prediction at missing values
+#' fit <- smooth.spline(mtcars$mpg, mtcars$hwy, cv = TRUE)
+#'
+#' has_missing <- c(30, NA, 40)
+#'
+#' # this fails
+#' \dontrun{
+#' predict(fit, has_missing)
+#' }
+#'
+#' # and this is the hacky solution
+#' vapply(has_missing, function(x) predict_or_na(fit, x)$y, numeric(1))
+#'
+#' # this also works on data frames
+#' fit2 <- lm(mpg ~ ., mtcars)
+#'
+#' # add in some missing values
+#' mt2 <- mtcars
+#' diag(mt2) <- NA
+#'
+#' apply(mt2, 1, predict_or_na, object = fit2)
+#'
+#' purrr::map_dbl(mt2, ~predict_or_na(fit2, .x))
+#'
+predict_or_na <- function(object, obs) {
 
+  # print(obs)
+  # print(NROW(obs))
+  # print(class(obs))
+  # print(dim(obs))
+  #
+  pred <- tryCatch({
+    predict(object, obs)
+  }, error = function(cnd) {
+    NA
+  })
+
+  if (!is.numeric(pred) || !(length(pred) == 1))
+    pred <- NA
+
+  pred
 }
 
-# use this instead of mutate because it puts the column first in the dataframe
+
+use_suggested_package <- function(pkg_name) {
+  if (!requireNamespace(pkg_name, quietly = TRUE))
+    glubort("Must install the {pkg_name} packge in order to use this function.")
+}
+
+#' @export
 add_id_column <- function(data) {
-  tibble::add_column(data, id = 1:nrow(data), .before = TRUE)
-}
-
-validate_logical <- function(x) {
-  arg_name <- as.character(substitute(x))
-  if (!is.logical(x) || length(x) != 1)
-    stop(
-      "Argument `", arg_name, "` must be a logical vector with one element.",
-      call. = FALSE
-    )
-}
-
-validate_probability <- function(x) {
-  arg_name <- as.character(substitute(x))
-  if (!is.numeric(x) || length(x) != 1 || x < 0 || x > 1)
-    stop(
-      "Argument `", arg_name, "` must be a vector with one element strictly",
-      "between 0 and 1.",
-      call. = FALSE
-    )
-}
-
-validate_positive <- function(x) {
-  arg_name <- as.character(substitute(x))
-  if (!is.numeric(x) || x <= 0)
-    stop(
-      "Argument `", arg_name, "` must be a positive vector with one positive",
-      "element", call. = FALSE
-    )
+  tibble::add_column(data, .id = 1:nrow(data), .before = TRUE)
 }
 
 `%notin%` <- Negate(`%in%`)
@@ -61,12 +86,14 @@ binomial_helper <- function(
   type = c("prob", "class"),
   threshold = 0.5) {
 
+  # MK the thresholding part we are going to add to `probably`
+
   # TODO: this should really just create an appropriate probability
   # matrix and pass the work off to multinomial_helper
 
   stopifnot(length(levels) == 2)
 
-  type <- match.arg(type)
+  type <- arg_match(type)
   validate_probability(threshold)
   raw <- as.vector(raw)
 
@@ -84,16 +111,12 @@ binomial_helper <- function(
   }
 }
 
-# TODO: make this more informative
-could_not_dispatch_error <- function()
-  stop("There's no method for the given object and type.")
-
 multinomial_helper <- function(
   raw,
   levels,
   type = c("prob", "class")) {
 
-  type <- match.arg(type)
+  type <- arg_match(type)
   probs <- as_tibble(raw)
   colnames(probs) <- paste0(".pred_", levels)
 
@@ -105,35 +128,28 @@ multinomial_helper <- function(
   tibble(.pred_class = as.factor(levels[argmax_idx]))
 }
 
+# MK it's always the second level. We might want to tie this in with the
+# MK global variable defined by `yardstick` to be consistent?
 
-#' Determine the positive class of a logistic regression fit with `glm`
-#'
-#' @param object TODO
-#'
-#' @return TODO
-#' @export
-positive_class <- function(object) {
-  stopifnot(inherits(object, "glm"))
-  stopifnot(family(object)$family == "binomial")
 
-  # TODO
-}
+# convention: std_error: logical argument, se: numeric vector of standard errors
+# adds level attribute but not interval attribute
+safe_confint <- function(mean, se, level, df = NULL) {
 
-pred_se_to_confint <- function(pred_se, level, se_fit) {
-  crit_val <- qnorm(1 - level / 2)
+  # level != alpha, so parentheses here are key!
+  #   (1 - 0.95) / 2 = 0.025
+  #   1 - 0.95 / 2   = 0.525  -- very wrong and overconfident interval!
 
-  pred <- dplyr::mutate(
-    pred_se,
-    .pred_lower = fit - crit_val * .std_error,
-    .pred_upper = fit + crit_val * .std_error
+  alpha <- (1 - level) / 2
+  crit_val <- if (is.null(df)) qnorm(alpha) else qt(alpha, df)
+
+  pred <- tibble(
+    .pred = mean,
+    .pred_lower = .pred - crit_val * se,
+    .pred_upper = .pred + crit_val * se
   )
 
-  if (!se_fit)
-    pred <- dplyr::select(pred, -.std_error)
-
-  attr(pred, "interval") <- "confidence"
   attr(pred, "level") <- level
-
   pred
 }
 
@@ -149,9 +165,8 @@ check_type_by_param <- function(type_param_table, type, param, all = NULL) {
   allowed_types <- c(allowed_types, all)
 
   if (type %notin% allowed_types)
-    stop(
+    abort(
       "`type` must be one of the following: ",
-      paste(allowed_types, collapse = ", "), ". You entered: ", type, ".",
-      call. = FALSE
+      paste(allowed_types, collapse = ", "), ". You entered: ", type, "."
     )
 }

@@ -6,7 +6,8 @@
 \alias{safepredict-package}
 \title{safepredict: Consistent prediction following tidymodels principles}
 \description{
-What the package does (one paragraph).
+Provides the safe_predict() generic, a consistent interface to
+    prediction that meets that tidymodels prediction specification.
 }
 \seealso{
 Useful links:
@@ -17,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Alex Hayes \email{alexpghayes@gmail.com}
+\strong{Maintainer}: Alex Hayes \email{alexpghayes@gmail.com} (0000-0002-4985-5160)
 
 Other contributors:
 \itemize{

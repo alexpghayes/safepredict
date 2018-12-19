@@ -35,8 +35,13 @@ A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \co
 Predictions for observations with missing data will be \code{NA}. Returned
 tibble has different columns depending on \code{type}:
 \itemize{
-\item \code{"response"}: \code{.pred} (numeric)
-\item \code{"class"}: \code{.pred} (factor)
+\item \code{"response"}:
+\itemize{
+\item univariate outcome: \code{.pred} (numeric)
+\item multivariate outcomes: \code{.pred_{outcome name}} (numeric) for each
+outcome
+}
+\item \code{"class"}: \code{.pred_class} (factor)
 \item \code{"prob"}: \code{.pred_{level}} columns (numerics between 0 and 1)
 \item \code{"link"}: \code{.pred} (numeric)
 \item \code{"conf_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)

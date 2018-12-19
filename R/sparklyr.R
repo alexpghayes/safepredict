@@ -1,3 +1,5 @@
+
+# NOTE: input and output should both be Spark DFs, not R DFs. document!
 #' @export
 safe_predict.ml_model <- function(
   object,
@@ -9,19 +11,17 @@ safe_predict.ml_model <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
-  pred <- ml_predict(object, dataset = new_data)
+  use_suggested_package("sparklyr")
+  pred <- sparklyr::ml_predict(object, dataset = new_data)
 
-  if (type == "response")
-    pred <- format_spark_num(pred)
-  else if (type == "class")
-    pred <- format_spark_class(pred)
-  else if (type == "prob")
-    pred <- format_spark_prob(pred)
-  else
+  switch(type,
+    "response" = format_spark_num(pred),
+    "class" = format_spark_class(pred),
+    "prob" = format_spark_prob(pred),
     no_method_for_type_error()
+  )
 
   pred
 }

@@ -23,7 +23,7 @@
 #' safe_predict(fit, mtcars)
 #'
 #' mt2 <- mtcars
-#' diag(mt2) <- NA  # overly aggressive
+#' diag(mt2) <- NA
 #'
 #' safe_predict(fit, mt2, std_error = TRUE)
 #' safe_predict(fit, mt2, type = "pred_int", level = 0.9)
@@ -42,8 +42,7 @@ safe_predict.lm <- function(
 
   ## input validation
 
-  new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   validate_logical(std_error)
   validate_probability(level)

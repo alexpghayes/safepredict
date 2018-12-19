@@ -3,24 +3,17 @@
 \name{multi_predict}
 \alias{multi_predict}
 \alias{multi_predict.default}
-\title{Model predictions across many sub-models}
+\title{Safely predict from many fits at once}
 \usage{
 multi_predict(object, ...)
 
 \method{multi_predict}{default}(object, ...)
 }
 \arguments{
-\item{object}{A \code{model_fit} object.}
+\item{object}{TODO}
 
-\item{...}{Optional arguments to pass to \code{predict.model_fit(type = "raw")}
-such as \code{type}.}
-}
-\value{
-A tibble with the same number of rows as the data being predicted.
-Mostly likely, there is a list-column named \code{.pred} that is a tibble with
-multiple rows per sub-model.
+\item{...}{TODO}
 }
 \description{
-For some models, predictions can be made on sub-models in the model object.
+Experimental and untested, not recommended for general use.
 }
-\keyword{internal}

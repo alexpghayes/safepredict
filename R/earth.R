@@ -11,24 +11,20 @@ safe_predict.earth <- function(
   threshold = 0.5,
   ...) {
 
-  new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   pred <- predict(object, new_data, type = "response")
   return(as_tibble(pred))
 
   # ignore fancy post processing / options due to time crunch
 
-  if (type == "response")
-    pred <- predict_earth_response(object, new_data)
-  else if (type == "class")
-    pred <- predict_earth_class(object, new_data, threshold)
-  else if (type == "prob")
-    pred <- predict_earth_prob(object, new_data)
-  else
+  switch(type,
+    "response" = predict_earth_response(object, new_data),
+    "class" = predict_earth_class(object, new_data, threshold),
+    "prob" = predict_earth_prob(object, new_data),
     no_method_for_type_error()
+  )
 
-  as_pred_tibble(pred)
 }
 
 predict_earth_response <- function(object, new_data, ...) {
@@ -45,12 +41,5 @@ predict_earth_prob <- function(object, new_data, ...) {
 
   pred <- predict(object, newdata = new_data, type = "response")
 
-  post = function(x, object) {
-    x <- x[,1]
-    x <- tibble(v1 = 1 - x, v2 = x)
-    colnames(x) <- object$lvl
-    x
-  }
-
-  post(pred)
+  # TODO: use the binomial helper
 }

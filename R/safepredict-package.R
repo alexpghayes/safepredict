@@ -1,71 +1,105 @@
 #' @keywords internal
 #'
-#' @importFrom stats family model.frame model.response na.pass predict qnorm
-#' @importFrom tibble as_tibble tibble
+#' @importFrom glue glue
+#'
+#' @importFrom rlang abort
+#' @importFrom rlang arg_match
+#'
+#' @importFrom stats family
+#' @importFrom stats model.frame
+#' @importFrom stats model.response
+#' @importFrom stats na.pass
+#' @importFrom stats predict
+#' @importFrom stats qnorm
+#' @importFrom stats qt
+#'
+#' @importFrom tibble as_tibble
+#' @importFrom tibble tibble
+#'
+#'
 "_PACKAGE"
 
 #' Safely predict from a model object
 #'
-#' @param object TODO
-#' @param new_data TODO
-#' @param type
-#' @param opts
-#' @param level
-#' @param std_error
-#' @param ... Unused.
+#' @param object An object or model you would like to get predictions from.
 #'
-#' @return TODO
+#' @param new_data **Required**. Data in the same format as required for
+#'  the `predict()` (or relevant method) for `object`. We do our best to
+#'  support missing data specified via `NA`s in `new_data` although this
+#'  is somewhat dependent on the underlying `predict()` method.
+#'
+#'  `new_data`:
+#'
+#'  - does not need to contain the model outcome
+#'  - can contain additional columns not used for prediction
+#'  - can have one or more rows when specified via a table-like object such
+#'   as a [tibble::tibble()], [data.frame()] or [matrix()].
+#'
+#' @param type A character vector indicating what kind of predictions you
+#'  would like.
+#'
+#'  Options are:
+#'
+#'  - `"response"`: continuous/numeric predictions
+#'  - `"class"`: hard class predictions
+#'  - `"prob"`: class or survival probabilities
+#'  - `"link"`: predictors on the linear scale (GLMs only)
+#'  - `"conf_int"`: confidence intervals for means of continuous predictions
+#'  - `"pred_int"`: prediction intervals for continuous outcomes
+#'
+#'  In most cases, only a subset of these options are available.
+#'
+#' @template unused_dots
+#' @template level
+#' @template std_error
+#'
+#' @template return
+#'
+#' @template intervals
+#' @template novel_factor_levels
+#'
+#' @section Recommended implementations:
+#'
+#'  The goal of `safepredict` is to make prediction as painless and consistent
+#'  as possible across a wide variety of model objects. In some cases, the
+#'  existing intrafrastructure is insufficient to provide a consistent and
+#'  feature-rich prediction interface. As a result, we support a number of
+#'  model objects that we do not actually recommend using. In these cases,
+#'  we try to link to better and more feature-rich implementations.
+#'
 #' @export
 safe_predict <- function(
   object,
   new_data,
   type = NULL,
-  opts = list(),
+  ...,
   level = 0.95,
-  std_error = FALSE,
-  ...) {
-
-  if (!is.null(type) && type != "raw" && length(opts) > 0)
-    warning("`opts` is only used with `type = 'raw'` and was ignored.")
-
-  if (!is.null(type) && type == "raw") {
-    call <- quote(predict(object, new_data))
-    call <- rlang::call_modify(call, !!!opts)
-    return(rlang::eval_tidy(call))
-  }
-
-  # TODO: don't pass `opts`` to individual methods
+  std_error = FALSE) {
+  ellipsis::check_dots_used()
   UseMethod("safe_predict")
 }
 
+#' @export
 safe_predict.default <- function(object, ...) {
-  stop(
-    "No safe_predict method has been defined for objects of class",
-    class(object)[1], call. = FALSE
-  )
+  cls <- class(object)[1]
+  glubort("There is no safe_predict() method for objects of class {cls}.")
 }
 
-
-# Define a generic to make multiple predictions for the same model object ------
-
-#' Model predictions across many sub-models
+#' Safely predict from many fits at once
 #'
-#' For some models, predictions can be made on sub-models in the model object.
-#' @param object A `model_fit` object.
-#' @param ... Optional arguments to pass to `predict.model_fit(type = "raw")`
-#'  such as `type`.
-#' @return A tibble with the same number of rows as the data being predicted.
-#'  Mostly likely, there is a list-column named `.pred` that is a tibble with
-#'  multiple rows per sub-model.
-#' @keywords internal
-#' @export
-multi_predict <- function(object, ...)
+#' Experimental and untested, not recommended for general use.
+#'
+#' @param object TODO
+#' @param ... TODO
+multi_predict <- function(object, ...) {
+  ellipsis::check_dots_used()
   UseMethod("multi_predict")
+}
 
-#' @keywords internal
-#' @export
 #' @rdname multi_predict
-multi_predict.default <- function(object, ...)
-  stop ("No `multi_predict` method exists for objects with classes ",
-        paste0("'", class(object), "'", collapse = ", "), call. = FALSE)
+#' @export
+multi_predict.default <- function(object, ...) {
+  cls <- class(object)[1]
+  glubort("There is no multi_predict() method for objects of class {cls}.")
+}
 

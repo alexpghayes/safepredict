@@ -1,0 +1,53 @@
+---
+title: "Confidence vs predictive intervals"
+author: "Alex Hayes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Confidence vs predictive intervals}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+TL; DR: You almost certainly want a predictive interval.
+
+**uncertainty** is key. the philosophy of safepredict is that you nearly certainly fit a wrong model. i.e. we would like to make predictionsand we have fit the wrong model
+
+regression problems: you typically estimate the conditional mean $E[Y|X]$ (or perhaps the conditional median or mode) -- it doesn't really matter, the key take away is that you are estimating the *center* of a distribution.
+
+example: linear regression
+
+$$y = XB + \varepsilon$$
+
+and if you then assume that $\varepsilon \sim \mathrm{Normal}(0, \sigma^2)$, we get that
+
+## confidence intervals
+
+suppose you have a distribution, you want to know where most of that 
+
+if you are a bayesian, pretty much the same thinking applies, except instead of looking at a sampling distribution of your prediction, you look at the posterior predictive distribution of your prediction and take quantiles of that. different interpretation, and different name (credible interval), but the same idea.
+
+## pointwise confidence intervals for conditional means
+
+pointwise confidence interval for a new $x_i'$ in linear regression
+
+## pointwise predictive intervals for new predictions
+
+### sanity check in a univariate case: ggplot of pointwise coverage
+
+you've probably been taught to think about confidence intervals. i suggest instead that you *always* default to predictive intervals, that you sanity check coverage visually, and that you think about multiple testing and whether it will impact you.
+
+## multiple testing
+
+## simultaneous confidence intervals
+
+just not something that gets talked about enough
+
+frequentist case: bonferroni correct, gavin simpson's GAM trick

@@ -1,0 +1,57 @@
+---
+title: "Handling novel factor levels"
+author: "Alex Hayes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Handling novel factor levels}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## set up some example data
+
+## warning: dummy coding variables *results in information loss*
+
+random forest example where the wrong type of stuff happens because the factors are now treated as integers
+
+if the model you want to work *can* deal with new factors, please let it!
+
+```{r}
+# lme4 example dealing with new factors
+# brms example dealing with new factors
+```
+
+if you want to test if method x will explode, do something like this:
+
+```{r}
+# small data test for breakage
+```
+
+...here we see that things have broken. what are our options?
+
+## options
+
+- convert to mode
+- likelihood encoding -- especially for *huge* numbers of factors
+- one hot encodings -- linearly dependent columns, so lots of GLM / unpenalized likelihood methods are to break, also you'll get identifiability issues
+- missing data if the prediction method can still make predictions
+
+- dummy vignette also says you can use integer encoding, or `step_other`. don't recommend integer encoding. example of how step other might work.
+
+
+
+## one hot encodings with recipes
+
+### what happens to novel factor levels
+
+For additional details, please read the full [vignette on dummy variables][dummy] in the `recipes` package.
+
+[dummy]: https://tidymodels.github.io/recipes/articles/Dummies.html

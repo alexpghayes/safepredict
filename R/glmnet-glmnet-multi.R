@@ -25,7 +25,7 @@ multi_predict.glmnet <- function(
   ## input validation
 
   new_data <- Matrix::as.matrix(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   # TODO: some validation on the hyperparameter grid.
   # return some vector of penalties to consider
@@ -53,18 +53,14 @@ multi_predict.glmnet <- function(
 
   check_type_by_param(type_by_param, type, family)
 
-  if (family == "gaussian")
-    multi_glmnet_numeric(object, new_data, type, params)
-  else if (family == "mgaussian")
-    multi_glmnet_mgaussian(object, new_data, type, params)
-  else if (family == "binomial")
-    multi_glmnet_binomial(object, new_data, type, params)
-  else if (family == "multinomial")
-    multi_glmnet_multinomial(object, new_data, type, params)
-  else if (family == "poisson")
-    multi_glmnet_numeric(object, new_data, type, params)
-  else
+  switch(family,
+    "gaussian" = multi_glmnet_numeric(object, new_data, type, params),
+    "mgaussian" = multi_glmnet_mgaussian(object, new_data, type, params),
+    "binomial" = multi_glmnet_binomial(object, new_data, type, params),
+    "multinomial" = multi_glmnet_multinomial(object, new_data, type, params),
+    "poisson" = multi_glmnet_numeric(object, new_data, type, params),
     could_not_dispatch_error()
+  )
 }
 
 
@@ -93,6 +89,8 @@ multi_glmnet_mgaussian <- function(object, new_data, type, params) {
   pred_list <- purrr::map2(pred_list, params, add_id_and_lambda)
   pred <- dplyr::bind_rows(pred_list)
   pred <- tidyr::nest(pred, -id)
+  # MK Does this return a DF or matrix back. The specification has multivariate
+  # MK outcomes being named `.pred_{column name}`
   tibble(.pred = pred$data)
 }
 

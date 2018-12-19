@@ -1,32 +1,41 @@
 Package: safepredict
 Title: Consistent prediction following tidymodels principles
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     c(person(given = "Alex",
              family = "Hayes",
              role = c("aut", "cre"),
-             email = "alexpghayes@gmail.com"),
+             email = "alexpghayes@gmail.com",
+             comment = c(ORCID = "0000-0002-4985-5160")),
       person(given = "RStudio",
              role = "cph"))
-Description: What the package does (one paragraph).
+Description: Provides the safe_predict() generic, a consistent interface to
+    prediction that meets that tidymodels prediction specification.
 License: MIT + file LICENSE
 URL: https://github.com/alexpghayes/safepredict
 BugReports: https://github.com/alexpghayes/safepredict/issues
 Depends: 
-    R (>= 3.1)
+    R (>= 3.3)
 Imports: 
     dplyr,
+    ellipsis (>= 0.0.1),
+    glue,
     purrr,
     rlang,
     tibble
 Suggests: 
     covr,
+    glmnet,
     knitr,
+    mgcv,
+    ranger,
     rmarkdown,
     testthat
 VignetteBuilder: 
     knitr
+Remotes: 
+    hadley/ellipsis
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 6.1.0.9000
+RoxygenNote: 6.1.1

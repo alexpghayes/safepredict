@@ -9,22 +9,16 @@ safe_predict.keras <- function(
   ),
   ...) {
 
-  new_data <- safe_tibble(new_data)
-  type <- match.arg(type)
+  type <- arg_match(type)
 
   new_data <- as.matrix(new_data)
 
-  ## TODO: dispatch on type
-  if (type == "response")
-    predict_keras_response(object, new_data)
-  else if (type == "class")
-    predict_keras_class(object, new_data)
-  else if (type == "prob")
-    predict_keras_prob(object, new_data)
-  else
+  switch(type,
+    "response" = predict_keras_response(object, new_data),
+    "class" = predict_keras_class(object, new_data),
+    "prob" = predict_keras_prob(object, new_data),
     no_method_for_type_error()
-
-  pred
+  )
 }
 
 
@@ -48,6 +42,9 @@ predict_keras_prob <- function(object, new_data, ...) {
 
   pred <- predict_proba(object, newdata = new_data)
 
+  # TODO: use class_prob_helper here
+
+  # MK missing a `post =` here?
   function(x, object) {
     x <- as_tibble(x)
     colnames(x) <- object$lvl
