@@ -8,7 +8,8 @@
   ...)
 }
 \arguments{
-\item{object}{An \code{nls} object returned from a call to \code{\link[stats:nls]{stats::nls()}}.}
+\item{object}{A \code{smooth.spline} object returned from a call to
+\code{\link[stats:smooth.spline]{stats::smooth.spline()}}.}
 
 \item{new_data}{Gotta be a vector: TODO}
 
@@ -18,8 +19,6 @@
 }}
 
 \item{...}{Unused.}
-
-\item{deriv}{Defulats}
 
 \item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
 coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}

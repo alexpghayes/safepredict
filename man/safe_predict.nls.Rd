@@ -9,52 +9,49 @@
 \arguments{
 \item{object}{An \code{nls} object returned from a call to \code{\link[stats:nls]{stats::nls()}}.}
 
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
+\item{new_data}{\strong{Required}. A data frame containing predictors.}
 
 \item{type}{What kind of predictions to return. Options are:
 \itemize{
 \item \code{"response"} (default): Standard predictions from non-linear regression.
 }}
-
-\item{...}{Unused.}
-
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
 }
 \value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
-Predictions for observations with missing data will be \code{NA}. Returned
-tibble has different columns depending on \code{type}:
-\itemize{
-\item \code{"response"}:
-\itemize{
-\item univariate outcome: \code{.pred} (numeric)
-\item multivariate outcomes: \code{.pred_{outcome name}} (numeric) for each
-outcome
-}
-\item \code{"class"}: \code{.pred_class} (factor)
-\item \code{"prob"}: \code{.pred_{level}} columns (numerics between 0 and 1)
-\item \code{"link"}: \code{.pred} (numeric)
-\item \code{"conf_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
-\item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
-}
-
-For interval predictions, the tibble has additional attributes \code{level}
-and \code{interval}. The \code{level} is the same as the \code{level} argument and is
-between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
-Some models may also set a \code{method} attribute to detail the method
-used to calculate the intervals.
+TODO
 }
 \description{
 Safe predictions from an nls object
 }
+\section{Determining uncertainty in predictions}{
+
+
+Note that \code{\link[stats:predict.nls]{stats::predict.nls()}} has an \code{se.fit} argument, but it is
+currently ignored. There is no build-in capability in base R to determine
+the uncertainty in the predictions from \code{nls}.
+
+In practice, there are two options to get these:
+\enumerate{
+\item Bootstrapping (recommended)
+\item The Delta Method
+}
+
+\strong{Bootstrapping}: We recommend using the \code{rsample} package for
+bootstrapping, in particular \code{\link[rsample:bootstraps]{rsample::bootstraps()}}. See\preformatted{vignette("bootstrapping", package = "safepredict")
+}
+
+for worked examples.
+
+\strong{Delta Method}: Some people seem to be happy to use the delta method,
+and others claim it is numerically unstable. Two options include
+\code{\link[car:DeltaMethod]{car::DeltaMethod()}} and \code{\link[emdbook:deltavar]{emdbook::deltavar()}}.
+}
+
 \examples{
+
+fit <- nls(demand ~ SSasympOrig(Time, A, lrc), data = BOD)
+safe_predict(fit, BOD)
+
+fit2 <- nls(mpg ~ k / wt + b, mtcars, start = list(k = 1, b = 0))
+safe_predict(fit2, mtcars)
 
 }

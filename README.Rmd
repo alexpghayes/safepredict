@@ -32,6 +32,10 @@ The goal is to eventually meet the full [tidymodels prediction specification][pr
 
 [pred_spec]: https://tidymodels.github.io/model-implementation-principles/model-predictions.html
 
+## Before you get started
+
+it's possible you are trying to solve a problem that's already been solved. go checkout [`parsnip`](https://tidymodels.github.io/parsnip/).
+
 ## Installation
 
 `safepredict` is currently in the beginning stages of development and is available only on Github. You can install it with:

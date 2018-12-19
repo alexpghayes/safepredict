@@ -28,8 +28,20 @@ see `safe_predict.lm()` for example
 
 - missing data
 
+## new_data validation is model specific
+
+- are necessary predictors present
+- what input types are okay
+
+
+## input edge cases
+
+# - spline trap
+
+
 # tests
 
+the zoo of formulas to use to test the formula interface
 
 ```{r}
 ## function signature

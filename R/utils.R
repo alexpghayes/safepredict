@@ -1,3 +1,62 @@
+
+
+#' Predict at a single observation or return NA
+#'
+#' A painful and inefficient hack to bring missing value support to the most
+#' desperate cases.
+#'
+#' @param object Object to calculate predictins from.
+#' @param obs A single observation to get a prediction at.
+#'
+#' @return A numeric vector of length one containing a prediction, or `NA` if
+#'  prediction is not successful.
+#'
+#' @examples
+#'
+#' # doesn't support prediction at missing values
+#' fit <- smooth.spline(mtcars$mpg, mtcars$hwy, cv = TRUE)
+#'
+#' has_missing <- c(30, NA, 40)
+#'
+#' # this fails
+#' \dontrun{
+#' predict(fit, has_missing)
+#' }
+#'
+#' # and this is the hacky solution
+#' vapply(has_missing, function(x) predict_or_na(fit, x)$y, numeric(1))
+#'
+#' # this also works on data frames
+#' fit2 <- lm(mpg ~ ., mtcars)
+#'
+#' # add in some missing values
+#' mt2 <- mtcars
+#' diag(mt2) <- NA
+#'
+#' apply(mt2, 1, predict_or_na, object = fit2)
+#'
+#' purrr::map_dbl(mt2, ~predict_or_na(fit2, .x))
+#'
+predict_or_na <- function(object, obs) {
+
+  # print(obs)
+  # print(NROW(obs))
+  # print(class(obs))
+  # print(dim(obs))
+  #
+  pred <- tryCatch({
+    predict(object, obs)
+  }, error = function(cnd) {
+    NA
+  })
+
+  if (!is.numeric(pred) || !(length(pred) == 1))
+    pred <- NA
+
+  pred
+}
+
+
 use_suggested_package <- function(pkg_name) {
   if (!requireNamespace(pkg_name, quietly = TRUE))
     glubort("Must install the {pkg_name} packge in order to use this function.")

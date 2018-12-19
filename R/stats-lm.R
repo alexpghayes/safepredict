@@ -42,7 +42,6 @@ safe_predict.lm <- function(
 
   ## input validation
 
-  new_data <- safe_tibble(new_data)
   type <- arg_match(type)
 
   validate_logical(std_error)

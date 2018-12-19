@@ -14,7 +14,9 @@ safe_predict(object, new_data, type = NULL, ..., level = 0.95,
 \item{object}{An object or model you would like to get predictions from.}
 
 \item{new_data}{\strong{Required}. Data in the same format as required for
-the \code{predict()} (or relevant method) for \code{object}.
+the \code{predict()} (or relevant method) for \code{object}. We do our best to
+support missing data specified via \code{NA}s in \code{new_data} although this
+is somewhat dependent on the underlying \code{predict()} method.
 
 \code{new_data}:
 \itemize{
@@ -22,15 +24,7 @@ the \code{predict()} (or relevant method) for \code{object}.
 \item can contain additional columns not used for prediction
 \item can have one or more rows when specified via a table-like object such
 as a \code{\link[tibble:tibble]{tibble::tibble()}}, \code{\link[=data.frame]{data.frame()}} or \code{\link[=matrix]{matrix()}}.
-}
-
-We do our best to support missing data specified via \code{NA}s in \code{new_data}
-although this is somewhat dependent on the underlying \code{predict()} method.
-
-Currently we do not have a robust way to check for novel factor levels in
-factor predictors. We recommend using the
-\link[recipes:`recipes-package`]{recipes} to consistently handle categorical
-predictors.}
+}}
 
 \item{type}{A character vector indicating what kind of predictions you
 would like.
@@ -45,11 +39,7 @@ Options are:
 \item \code{"pred_int"}: prediction intervals for continuous outcomes
 }
 
-In most cases, only a subset of these options are available. For details
-on the difference between confidence and prediction intervals, see
-the \href{TODO}{online documentation}. This is also available as a vignette
-that you can access with:\preformatted{vignette("confidence-and-prediction-intervals", package = "safepredict")
-}}
+In most cases, only a subset of these options are available.}
 
 \item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
 evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
@@ -99,6 +89,31 @@ used to calculate the intervals.
 \description{
 Safely predict from a model object
 }
+\section{Confidence vs prediction intervals}{
+
+
+For details on the difference between confidence and prediction intervals,
+see the \href{TODO}{online documentation}. This is also available as a vignette
+that you can access with:\preformatted{vignette("intervals", package = "safepredict")
+}
+}
+
+\section{Factors and novel factor levels}{
+
+
+We recommend using the
+\link[recipes:`recipes-package`]{recipes} to consistently handle categorical
+(factor) predictors. For details see:\preformatted{vignette("novel-factor-levels", package = "safepredict")
+}
+
+Currently we do not have a robust way to check for novel factor levels
+from within \code{safepredict}. In practice this would require storing
+information about predictors in the model object at fitting time,
+and \code{safepredict} is largely at the mercy of package writers in
+that regard. Using \code{recipes} to preprocess your data should take care
+of the issue.
+}
+
 \section{Recommended implementations}{
 
 

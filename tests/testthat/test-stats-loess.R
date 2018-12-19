@@ -1,17 +1,12 @@
 context("test-stats-loess")
 
-# not sure why you would do this but you can
 fit <- loess(mpg ~ wt, mtcars)
 fit2 <- loess(mpg ~ wt, mtcars, control = loess.control(surface = "direct"))
 new_wt_df <- tibble(wt = 1:10)
 
-## function signature
-
 test_that("function signature", {
-  expect_safepredict_signature(safe_predict.loess)
+  check_safepredict_signature(safe_predict.loess)
 })
-
-## input validation works
 
 test_that("input validation", {
 
@@ -46,39 +41,33 @@ test_that("input validation", {
   )
 })
 
-## input edge cases
-
-# - missing data
-# - spline trap
-# - single observation
-# - repeated observations
-
 ## checks on returned predictions
 
-# - correct class given type
-# - in a tibble
-# - correct number of rows
-# - level and interval attributes for type = conf_int and type = pred_int
-# - correct column names given type
+test_that("default type", {
+  default_preds <- safe_predict(fit, mtcars)
+  check_predict_output(default_preds, mtcars, type = "response")
+})
 
-# not sure why you would do this but you can
-fit <- loess(mpg ~ poly(wt), mtcars)
-predict(fit, mtcars)
+test_that("type = \"response\"", {
+  check_predict(safe_predict.loess, fit, mtcars, "mpg", type = "response")
+  check_predict(safe_predict.loess, fit2, mtcars, "mpg", type = "response")
 
-fit <- loess(mpg ~ wt, mtcars)
-predict(fit, tibble(wt = 1:10), se = TRUE)
+  check_predict(safe_predict.loess, fit, new_wt_df, "mpg", type = "response")
+  check_predict(safe_predict.loess, fit2, new_wt_df, "mpg", type = "response")
+})
 
-safe_predict(fit, mtcars)
-safe_predict(fit, mtcars, std_error = TRUE)
+test_that("type = \"conf_int\"", {
+  check_predict(safe_predict.loess, fit, mtcars, "mpg", type = "conf_int")
+  check_predict(safe_predict.loess, fit2, mtcars, "mpg", type = "conf_int")
 
-safe_predict(fit, mtcars, type = "conf_int")
-safe_predict(fit, mtcars, type = "pred_int") %>%
-  bind_cols(mtcars) %>%
-  ggplot(aes(wt, mpg)) +
-  geom_point() +
-  geom_ribbon(aes(wt, ymin = .pred_lower, ymax = .pred_upper), alpha = 0.3)
+  check_predict(safe_predict.loess, fit, new_wt_df, "mpg", type = "conf_int")
+  check_predict(safe_predict.loess, fit2, new_wt_df, "mpg", type = "conf_int")
+})
 
-# extrapolation
-# to get extrapolation
-fit2 <- loess(mpg ~ wt, mtcars, control = loess.control(surface = "direct"))
-predict(fit2, tibble(wt = 1:10), se = TRUE)
+test_that("type = \"pred_int\"", {
+  check_predict(safe_predict.loess, fit, mtcars, "mpg", type = "pred_int")
+  check_predict(safe_predict.loess, fit2, mtcars, "mpg", type = "pred_int")
+
+  check_predict(safe_predict.loess, fit, new_wt_df, "mpg", type = "pred_int")
+  check_predict(safe_predict.loess, fit2, new_wt_df, "mpg", type = "pred_int")
+})
