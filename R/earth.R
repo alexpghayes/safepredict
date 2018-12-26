@@ -33,7 +33,7 @@ predict_earth_response <- function(object, new_data, ...) {
 }
 
 predict_earth_class <- function(object, new_data, threshold) {
-  pred <- predict(object, newdata = new_data, type = "class", thresh = thresold)
+  pred <- predict(object, newdata = new_data, type = "class", thresh = threshold)
   as_pred_tibble(pred)
 }
 

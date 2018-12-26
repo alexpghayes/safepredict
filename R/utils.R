@@ -13,15 +13,15 @@
 #'
 #' @examples
 #'
+#' \dontrun{
+#'
 #' # doesn't support prediction at missing values
 #' fit <- smooth.spline(mtcars$mpg, mtcars$hwy, cv = TRUE)
 #'
 #' has_missing <- c(30, NA, 40)
 #'
 #' # this fails
-#' \dontrun{
 #' predict(fit, has_missing)
-#' }
 #'
 #' # and this is the hacky solution
 #' vapply(has_missing, function(x) predict_or_na(fit, x)$y, numeric(1))
@@ -36,6 +36,8 @@
 #' apply(mt2, 1, predict_or_na, object = fit2)
 #'
 #' purrr::map_dbl(mt2, ~predict_or_na(fit2, .x))
+#'
+#' }
 #'
 predict_or_na <- function(object, obs) {
 
@@ -62,6 +64,10 @@ use_suggested_package <- function(pkg_name) {
     glubort("Must install the {pkg_name} packge in order to use this function.")
 }
 
+#' Add row numbers to a tibble
+#'
+#' @param data A data frame or tibble
+#'
 #' @export
 add_id_column <- function(data) {
   tibble::add_column(data, .id = 1:nrow(data), .before = TRUE)
@@ -170,3 +176,12 @@ check_type_by_param <- function(type_param_table, type, param, all = NULL) {
       paste(allowed_types, collapse = ", "), ". You entered: ", type, "."
     )
 }
+
+utils::globalVariables(
+  c(
+    ".pred",
+    "id",
+    "lambda",
+    "tree"
+  )
+)

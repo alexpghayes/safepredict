@@ -4,8 +4,11 @@
 #' @param new_data TODO
 #' @param type TODO
 #' @param params TODO
+#' @param ... TODO
 #'
-#' @template boilerplate
+#' @return TODO
+#'
+#' @family glmnet
 #'
 #' @export
 multi_predict.cv.glmnet <- function(
@@ -17,6 +20,7 @@ multi_predict.cv.glmnet <- function(
     "prob",
     "link"
   ),
+  ...,
   params = NULL) {
-  multi_predict.glmnet(object$glmnet.fit, new_data, type, params)
+  multi_predict(object$glmnet.fit, new_data, type, params)
 }

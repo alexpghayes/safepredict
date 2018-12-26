@@ -1,19 +1,17 @@
 #' Safe predictions from a linear model
 #'
 #' @param object An `lm` object returned from a call to [stats::lm()].
-#'
+#' @param new_data TODO
 #' @param type What kind of predictions to return. Options are:
 #'   - `"response"` (default): Standard predictions from linear regression.
 #'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
 #'   - `"pred_int"`: Predictions with accompanying prediction interval.
-#' @template boilerplate
+#' @template unused_dots
+#' @template std_error
+#' @template level
 #'
 #' @details Do not use on model objects that only subclass `lm`. This will result
 #'   in an error.
-#'
-#' @section Confidence intervals versus predictions intervals:
-#'
-#' TODO
 #'
 #' @export
 #' @examples
@@ -36,9 +34,9 @@ safe_predict.lm <- function(
     "conf_int",
     "pred_int"
   ),
+  ...,
   std_error = FALSE,
-  level = 0.95,
-  ...) {
+  level = 0.95) {
 
   ## input validation
 

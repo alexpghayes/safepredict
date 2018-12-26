@@ -98,8 +98,7 @@ that you can access with:\preformatted{vignette("intervals", package = "safepred
 \section{Factors and novel factor levels}{
 
 
-We recommend using the
-\link[recipes:`recipes-package`]{recipes} to consistently handle categorical
+We recommend using \code{\link[recipes:recipe]{recipes::recipe()}}s to consistently handle categorical
 (factor) predictors. For details see:\preformatted{vignette("novel-factor-levels", package = "safepredict")
 }
 

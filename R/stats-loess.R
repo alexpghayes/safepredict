@@ -1,13 +1,17 @@
 #' Safe predictions from a loess object
 #'
 #' @param object A `loess` object returned from a call to [stats::loess()].
+#' @param new_data TODO
 #' @param type What kind of predictions to return. Options are:
 #'   - `"response"` (default): Standard predictions from LOESS regression.
 #'   - `"conf_int"`: Fitted values plus a confidence interval for the fit.
 #'   - `"pred_int"`: Predictions with accompanying prediction interval.
-#' @template boilerplate
 #'
-#' @template intervals
+#' @template unused_dots
+#' @template std_error
+#' @template level
+#'
+#' @template return
 #'
 #' @export
 #' @examples
@@ -19,7 +23,7 @@
 #' # the default behavior of loess() is return NA for values
 #' # outside the range of the training data:
 #'
-#' safe_predict(fit, tibble(wt = 1:10))
+#' safe_predict(fit, data.frame(wt = 1:10))
 #'
 #' # to enable extrapolation, use:
 #'
@@ -29,7 +33,7 @@
 #'    control = loess.control(surface = "direct")
 #' )
 #'
-#' safe_predict(fit2, tibble(wt = 1:10), type = "pred_int", level = 0.9)
+#' safe_predict(fit2, data.frame(wt = 1:10), type = "pred_int", level = 0.9)
 #'
 safe_predict.loess <- function(
   object,
@@ -83,9 +87,10 @@ predict_loess_interval <- function(object, new_data, type, level) {
   pred_list <- predict(object, new_data, se = TRUE, na.action = na.pass)
   interval <- if (type == "conf_int") "confidence" else "prediction"
 
-  with(pred_list, {
-    se <<- if (type == "conf_int") se.fit else sqrt(se.fit^2 + residual.scale^2)
-  })
+  if (type == "conf_int")
+    se <- pred_list$se.fit
+  else
+    se <- sqrt(pred_list$se.fit^2 + pred_list$residual.scale^2)
 
   pred <- safe_confint(pred_list$fit, se, level, pred_list$df)
   attr(pred, "interval") <- interval

@@ -5,7 +5,7 @@
 \title{Safe predictions for glmnet objects}
 \usage{
 \method{safe_predict}{glmnet}(object, new_data, type = c("response",
-  "class", "prob", "link"), penalty = NULL, threshold = 0.5, ...)
+  "class", "prob", "link"), ..., penalty = NULL, threshold = 0.5)
 }
 \arguments{
 \item{object}{TODO}
@@ -14,26 +14,22 @@
 
 \item{type}{TODO}
 
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
+
 \item{penalty}{Unlike \code{\link[=safe_predict.cv.glmnet]{safe_predict.cv.glmnet()}}, here you can explicitly
 set a value of \code{penalty}. In the CV version you have to pick one of the
 cross-validated versions of the penalty.}
 
-\item{...}{Unused.}
-
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
-
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
+\item{threshold}{A number between \code{0} and \code{1} to use as a threshold for
+classification. When the class probability for the class corresponding
+to a positive event is greater than the threshold, the event will be
+classified as positive. Defaults to \code{0.5}.}
 }
 \value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
+A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
 Predictions for observations with missing data will be \code{NA}. Returned
 tibble has different columns depending on \code{type}:
 \itemize{
@@ -49,6 +45,9 @@ outcome
 \item \code{"conf_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
 \item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
 }
+
+If you request standard errors with \code{std_error = TRUE}, an additional
+column \code{.std_error}.
 
 For interval predictions, the tibble has additional attributes \code{level}
 and \code{interval}. The \code{level} is the same as the \code{level} argument and is

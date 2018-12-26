@@ -3,13 +3,12 @@
 #' @param object TODO
 #' @param new_data TODO
 #' @param type TODO
+#' @template unused_dots
 #' @param params
 #'   - works with a single value for the penalty. otherwise CV is gonna be
 #'   inconsistent a wild pain in the rear.
 #'   - works with a vector of values for the penalty
 #'   - in the future will work with a tibble defining a parameter grid
-#'
-#' @template boilerplate
 #'
 #' @export
 multi_predict.glmnet <- function(
@@ -20,11 +19,11 @@ multi_predict.glmnet <- function(
     "class",
     "prob"
   ),
+  ...,
   params = NULL) {
 
   ## input validation
 
-  new_data <- Matrix::as.matrix(new_data)
   type <- arg_match(type)
 
   # TODO: some validation on the hyperparameter grid.

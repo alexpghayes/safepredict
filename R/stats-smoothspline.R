@@ -13,6 +13,7 @@
 #'
 #'   - `"response"` (default): Standard predictions from smoothing splines.
 #'
+#' @template unused_dots
 #' @template return
 #'
 #' @export
@@ -33,7 +34,7 @@
 #'
 #' @section Derivatives of smooths:
 #'
-#'  While [stats:::predict.smooth.spline()] has a `deriv` argument we
+#'  While `stats:::predict.smooth.spline()` has a `deriv` argument we
 #'  do not support it. If you would like to estimate derivates of smooths we
 #'  recommend using the `gratia` package, and in particular [gratia::fderiv()].
 #'  At the time of writing, `gratia` is not yet on CRAN, but can be installed

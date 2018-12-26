@@ -6,8 +6,9 @@
 \alias{safepredict-package}
 \title{safepredict: Consistent prediction following tidymodels principles}
 \description{
-Provides the safe_predict() generic, a consistent interface to
-    prediction that meets that tidymodels prediction specification.
+Provides the safe_predict() generic, a consistent
+    interface to prediction that meets that tidymodels prediction
+    specification.
 }
 \seealso{
 Useful links:

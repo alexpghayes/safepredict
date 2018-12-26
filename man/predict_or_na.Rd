@@ -21,15 +21,15 @@ desperate cases.
 }
 \examples{
 
+\dontrun{
+
 # doesn't support prediction at missing values
 fit <- smooth.spline(mtcars$mpg, mtcars$hwy, cv = TRUE)
 
 has_missing <- c(30, NA, 40)
 
 # this fails
-\dontrun{
 predict(fit, has_missing)
-}
 
 # and this is the hacky solution
 vapply(has_missing, function(x) predict_or_na(fit, x)$y, numeric(1))
@@ -44,5 +44,7 @@ diag(mt2) <- NA
 apply(mt2, 1, predict_or_na, object = fit2)
 
 purrr::map_dbl(mt2, ~predict_or_na(fit2, .x))
+
+}
 
 }

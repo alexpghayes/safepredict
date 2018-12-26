@@ -3,9 +3,9 @@
 #' @param object TODO
 #' @param new_data TODO
 #' @param type TODO
+#' @param ... TODO
 #' @param rule TODO
-#'
-#' @template boilerplate
+#' @param threshold TODO
 #'
 #' @export
 safe_predict.cv.glmnet <- function(
@@ -17,6 +17,7 @@ safe_predict.cv.glmnet <- function(
     "prob",
     "link"
   ),
+  ...,
   rule = c("1-se", "min"),
   threshold = 0.5) {
 
@@ -25,9 +26,7 @@ safe_predict.cv.glmnet <- function(
   rule <- arg_match(rule)
   rule <- if (rule == "1-se") "lambda.1se" else "lambda.min"
 
-  safe_predict.glmnet(
-    object = object$glmnet.fit,
-    new_data = new_data,
+  safe_predict(object$glmnet.fit, new_data,
     type = type,
     penalty = object[[rule]],
     threshold = threshold

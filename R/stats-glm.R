@@ -1,11 +1,7 @@
 #' Safe predictions from a generalized linear model
 #'
 #' @param object A `glm` object returned from a call to [stats::glm()].
-#' @param threshold A number between `0` and `1` to use as a threshold for
-#'   classification. When the class probability for the class corresponding
-#'   to a positive event is greater than the threshold, the event will be
-#'   classified as positive. Defaults to `0.5`. See [positive_class()] for
-#'   assistance determining which class is considered the positive class.
+#' @param new_data TODO
 #' @param type What kind of predictions to return. Which predictions are
 #'   available depends on the family of `object`.
 #'
@@ -30,8 +26,11 @@
 #'     available for `binomial` and `quasibinomial` families
 #'
 #'   Default is `"link"`.
+#' @template unused_dots
+#' @template std_error
+#' @template level
+#' @template threshold
 #'
-#' @template boilerplate
 #'
 #' @details For GLMs, standard errors can only be calculated when
 #'   `type = "link"`.
@@ -47,10 +46,10 @@ safe_predict.glm <- function(
     "class",
     "prob"
   ),
+  ...,
   std_error = FALSE,
   level = 0.95,
-  threshold = 0.5,
-  ...) {
+  threshold = 0.5) {
 
   ## input validation
 

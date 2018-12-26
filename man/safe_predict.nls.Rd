@@ -15,6 +15,11 @@
 \itemize{
 \item \code{"response"} (default): Standard predictions from non-linear regression.
 }}
+
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
@@ -67,7 +72,7 @@ for worked examples.
 
 \strong{Delta Method}: Some people seem to be happy to use the delta method,
 and others claim it is numerically unstable. Two options include
-\code{\link[car:DeltaMethod]{car::DeltaMethod()}} and \code{\link[emdbook:deltavar]{emdbook::deltavar()}}.
+\code{\link[car:deltaMethod]{car::deltaMethod()}} and \code{\link[emdbook:deltavar]{emdbook::deltavar()}}.
 }
 
 \examples{

@@ -1,7 +1,6 @@
 #' @section Factors and novel factor levels:
 #'
-#'  We recommend using the
-#'  [recipes][recipes::`recipes-package`] to consistently handle categorical
+#'  We recommend using [recipes::recipe()]s to consistently handle categorical
 #'  (factor) predictors. For details see:
 #'
 #'  ```

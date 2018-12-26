@@ -9,11 +9,13 @@
 #'
 #'   - `"response"` (default): Standard predictions from multiple regression.
 #'
+#' @template unused_dots
+#'
 #' @template return
 #'
 #' @section Estimating uncertainty:
 #'
-#'  [stats::predict.mlm()] provides neither confidence nor prediction
+#'  `stats::predict.mlm()`` provides neither confidence nor prediction
 #'  intervals, although there is not theoretical issue with calculating
 #'  these.
 #'

@@ -18,6 +18,11 @@ of any \code{NA}s may slow down prediction.}
 \itemize{
 \item \code{"response"} (default): Standard predictions from smoothing splines.
 }}
+
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
@@ -66,7 +71,7 @@ for worked examples and details on how you might do this.
 \section{Derivatives of smooths}{
 
 
-While \code{\link[stats:::predict.smooth.spline]{stats::::predict.smooth.spline()}} has a \code{deriv} argument we
+While \code{stats:::predict.smooth.spline()} has a \code{deriv} argument we
 do not support it. If you would like to estimate derivates of smooths we
 recommend using the \code{gratia} package, and in particular \code{\link[gratia:fderiv]{gratia::fderiv()}}.
 At the time of writing, \code{gratia} is not yet on CRAN, but can be installed

@@ -15,11 +15,12 @@
 multi_predict.ranger  <- function(
   object,
   new_data,
-  params = NULL, 
+  type = "response",
+  ...,
+  params = NULL,
   num_trees = NULL,
   verbose = FALSE,
-  seed = sample.int(10^5, 1),
-  ...) {
+  seed = sample.int(10^5, 1)) {
 
   mode <- object$treetype
 
@@ -47,7 +48,8 @@ multi_predict.ranger  <- function(
 multi_predict_ranger_helper <- function(
   object,
   new_data,
-  params) {
+  params,
+  num_trees) {
 
   # this parameter name should agree with the acceptable parameter names
   # as outlined in the model implementation document
@@ -59,7 +61,7 @@ multi_predict_ranger_helper <- function(
 
   # TODO: is tree going to be character here? should be numeric
   # MK should be numeric
-  gather(pred, tree, .pred)
+  tidyr::gather(pred, tree, .pred)
 }
 
 multi_predict_ranger_prob <- function(
@@ -70,11 +72,11 @@ multi_predict_ranger_prob <- function(
   pred_obj <- predict(object, new_data, type = "response", predict.all = TRUE)
   pred_array <- pred_obj$predictions
 
-  pred_list <- apply(pred_array, 3, predict_ranger_prob)
-  pred_list <- do.call(bind_rows, list(pred_list, .id = ".tree"))
+  pred_list <- apply(pred_array, 3, predict_ranger_helper)
+  pred_list <- do.call(dplyr::bind_rows, list(pred_list, .id = ".tree"))
 
-  pred <- as_pred_tibble(pred_mat, 1:pred_obj$num.trees)
+  pred <- as_pred_tibble(pred_list, 1:pred_obj$num.trees)
   # TODO: is tree going to be character here? should be numeric
   # MK should be numeric
-  gather(pred, tree, .pred)
+  tidyr::gather(pred, tree, .pred)
 }

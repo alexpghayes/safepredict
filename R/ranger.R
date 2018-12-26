@@ -1,5 +1,3 @@
-library(ranger)
-
 # DECISION: deal with all_tree in multi_predict method
 
 # TODO: implement a quantile method for the predictions
@@ -28,7 +26,7 @@ safe_predict.ranger  <- function(
   # from objects fit with the wrong stuff
 
   # TODO: make verbose and seed actually work
-  # MK use ...? 
+  # MK use ...?
 
   if (mode == "Probability estimation")
     predict_ranger_helper(object, new_data, std_error = FALSE)
@@ -57,6 +55,6 @@ predict_ranger_helper <- function(
 }
 
 predict_ranger_confint <- function(object, new_data, level, std_error) {
-  pred_se <- predict_ranger_helper(object, new_data, std_error = TRUE)
-  pred_se_to_confint(pred_se, level, std_error)
+  pred <- predict_ranger_helper(object, new_data, std_error = TRUE)
+  safe_confint(pred$.pred, pred$.std_error, level)
 }

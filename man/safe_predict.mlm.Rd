@@ -16,6 +16,11 @@ necessary predictors.}
 \itemize{
 \item \code{"response"} (default): Standard predictions from multiple regression.
 }}
+
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
 }
 \value{
 A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
@@ -50,7 +55,7 @@ Safe predictions from a multiple linear model object
 \section{Estimating uncertainty}{
 
 
-\code{\link[stats:predict.mlm]{stats::predict.mlm()}} provides neither confidence nor prediction
+`stats::predict.mlm()`` provides neither confidence nor prediction
 intervals, although there is not theoretical issue with calculating
 these.
 

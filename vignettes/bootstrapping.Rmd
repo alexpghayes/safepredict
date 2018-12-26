@@ -12,7 +12,8 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  eval = FALSE
 )
 ```
 
@@ -20,28 +21,18 @@ This vignette walks demonstrates how to estimate uncertainty in predictions via 
 
 Throughout this vignette we use the nonparametric bootstrap, which is more robust than the parametric bootstrap and does not require us to assumption that we have a correctly specified model. The parametric bootstrap will give you tighter intervals than the procedures we outline here, but we recommend against this unless you are  *very, very* certain that you have correctly specified your model.
 
+This vignette assumes you are interested in a continuous outcome.
+
 ## Bootstrapped confidence intervals
 
-for continuous outcomes. what to do if you only had hard class predictions? multinomial proportions stuff
+Let $X$ be the original data (containing both predictors and outcome).
 
-UGH THINK ABOUT THIS. this is like out of bag confidence intervals
-
-Let $X$ be the original data (containing both predictors and outcome). Split it into a training set $X_0$ and a test set $X'$.
-
-1. Sample the rows of $X_0$ with replacement $1, ..., B$ times to create bootstrapped data sets $X_1^*, ..., X_B^*$.
+1. Sample the rows of $X$ with replacement $1, ..., B$ times to create bootstrapped data sets $X_1^*, ..., X_B^*$.
 2. Fit your model of choice on each bootstrapped data set and obtain fits $\hat f_1, ..., \hat f_B$.
-3. Predict the mean at $X'$ with each $\hat f_i$ to get samples from the sampling distribution of $f(X')$.
-4. Look at the appropriate quantiles of $f(X')$. You're done!
+3. Predict the mean at $X$ with each $\hat f_i$ to get samples from the sampling distribution of $f(X)$.
+4. Look at the appropriate quantiles of $f(X)$. You're done!
 
-bootstrap out of sample estimate
-
-The OOB estimate, which 
-
-algorithm:
-
-1. fit a bunch of bootstrapped models
-2. predict the mean with each of the bootstrapped models
-3. look at the quantiles of these predictions
+Let's work through an example, using `glmnet` for a binary classification problem. Our goal will be to predict `Attrition` based on 30 predictors variables.
 
 ```{r}
 library(dplyr)
@@ -50,10 +41,12 @@ library(rsample)
 set.seed(27)
 
 attrition <- attrition %>% 
-  sample_n(300)
+  sample_n(500)
 
 glimpse(attrition)
 ```
+
+Since we're using `glmnet`, we have to start with a bunch of preprocessing. The `recipes` package makes this sane.
 
 ```{r}
 library(recipes)
@@ -70,15 +63,7 @@ x <- juice(rec, all_predictors(), composition = "matrix")
 y <- juice(rec, all_outcomes())$Attrition
 ```
 
-```{r}
-head(x)
-```
-
-```{r}
-head(y)
-```
-
-
+We can now fit an L1 penalized logistic regression model, and use `safe_predict()` to calculate residuals.
 
 ```{r}
 library(glmnet)
@@ -88,7 +73,7 @@ fit <- cv.glmnet(x, y, family = "binomial")
 pred <- safe_predict(fit, x, type = "prob")
 ```
 
-quick viz
+Let's take a quick look to sanity check our work. We'll plot the estimated probability of attrition versus scaled distanced from home.
 
 ```{r}
 library(ggplot2)
@@ -100,6 +85,8 @@ x %>%
   geom_jitter(alpha = 0.5) +
   theme_bw()
 ```
+
+This passes the sanity check, we proceed to the bootstrapping.
 
 ```{r}
 library(purrr)
@@ -114,7 +101,11 @@ fits <- boots %>%
     y_train = map(prepped, ~juice(.x, all_outcomes())$Attrition),
     model = map2(x_train, y_train, cv.glmnet, family = "binomial")
   )
+```
 
+Next we get predictions for each bootstrapped fit
+
+```{r}
 boot_preds <- fits %>% 
   mutate(
     preds = map(model, safe_predict, x, type = "prob"),
@@ -123,7 +114,7 @@ boot_preds <- fits %>%
   unnest(preds, .id = "model")
 ```
 
-90 percent confidence interval
+and all that remains to calculate a 90 percent confidence interval is to look at the quantiles of the bootstrapped fits:
 
 ```{r}
 pred_ci <- boot_preds %>% 
@@ -131,34 +122,112 @@ pred_ci <- boot_preds %>%
   summarize(
     .pred_Yes_lower = quantile(.pred_Yes, 0.05),
     .pred_Yes_upper = quantile(.pred_Yes, 0.95)
-  )
-```
-
-and if we want to bind those to our original predictions we would o
-
-```{r}
-pred_ci %>% 
+  ) %>% 
   bind_cols(pred) %>% 
   select(-.pred_No)
+
+pred_ci
 ```
 
 ## bootstrapping for *predictive* intervals
 
-Let $X$ be the original data (containing both predictors and outcome). Split it into a training set $X_0$ and a test set $X'$.
+based on: The method laid out below is the one described in Section 6.3.3 of Davidson and Hinckley (1997), Bootstrap Methods and Their Application
 
-**TODO**: totally made up the new steps, need to sanity check everything here
+described in detail for OLS [here][so_predictive_bootstrap]. two differences: use deviance residuals and the optimism bootstrap, but much in the same spirit
 
-0. **NEW STEP**: calculate residuals $\varepsilon$. (how to do this for class probabilities?)
+[so_predictive_bootstrap]: 
+https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval
 
-1. Sample the rows of $X_0$ with replacement $1, ..., B$ times to create bootstrapped data sets $X_1^*, ..., X_B^*$.
-2. Fit your model of choice on each bootstrapped data set and obtain fits $\hat f_1, ..., \hat f_B$.
-3. Predict the mean at $X'$ with each $\hat f_i$ to get samples from the sampling distribution of $f(X')$.
-4. **NEW STEP**: but was only the mean at $f(X')$ we really want a prediction. so we need to add noise. add a random residual from $\varepsilon$.
-4. Look at the appropriate quantiles of $f(X')$. You're done!
+is there a way to get the errors from the optimism bootstrap?
+
+```{r}
+pred <- safe_predict(fit, x, type = "prob")
+
+
+# for multiclass classification problems you'll need to use
+# multinomial deviance residuals. for continuous outcomes you
+# can use standard residuals
+
+# https://stats.stackexchange.com/questions/166585/pearson-vs-deviance-residuals-in-logistic-regression
+
+logreg_deviance_residuals <- function(probs, y) {
+  pi <- probs$.pred_Yes
+  y <- if_else(y == "Yes", 1, 0)
+  s <- if_else(y == "Yes", 1, -1)
+  s * sqrt(-2 * (y * log(pi) + (1 - y) * log(1 - pi)))
+}
+
+res <- logreg_deviance_residuals(pred, attrition$Attrition)
+head(res)
+```
+
+```{r}
+dev_res_opt
+
+dev_res_opt <- fits %>% 
+  mutate(
+    preds = map2(model, x_train, safe_predict, type = "prob"),
+    dev_res = map2(preds, y_train, logreg_deviance_residuals),
+    optimism = map_dbl(dev_res, ~sd(res) / sd(.x))
+  )
+
+optimism <- mean(dev_res_opt$optimism)
+optimism
+
+# rescale deviance residuals to have optimism correct variance
+corrected <- res * optimism
+
+correct_probs <- function(probs) {
+  # pick a random error to add to the prediction
+  # again, recall this is on the deviance scale
+  error <- sample(corrected, 1)
+  
+  mutate(probs,)
+  
+  probs$.pred_Yes <- 
+}
+
+dev_res_opt %>% 
+  mutate(
+    corrected_preds = map(preds, )
+  )
+  
+
+map(fits$model, fits$train, safe_)
+
+for (i in 1:10)
+  print(safe_predict(fits$model[[i]], fits$x_train[[i]], type = "prob"))
+fits
+```
+
+
+```{r}
+boot_preds <- fits %>% 
+  mutate(
+    preds = map(model, safe_predict, x, type = "prob"),
+    preds = map(preds, add_id_column)
+  ) %>% 
+  unnest(preds, .id = "model")
+```
+
+
+
+calculate the original residuals
+calculate optimism bootstrap residuals
+look at the optimism of the original residuals, rescale them by the calculated optimism
+use the bootstraps to estimate predictions, then add rescaled residuals back
+
+
+## Working with hard class predictions
+
+If you are working with hard class predictions you could still bootstrapping, calc
+
+
+for continuous outcomes. what to do if you only had hard class predictions? multinomial proportions stuff
 
 ## References
 
+
 https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20130014367.pdf
 
-https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval
 

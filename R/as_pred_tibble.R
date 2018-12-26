@@ -17,7 +17,6 @@
 #    - probably similar to matrix output
 
 # assumes table_like has a single column
-#' @export
 as_pred_tibble <- function(table_like, names = ".pred") {
 
   if (is.matrix(table_like))

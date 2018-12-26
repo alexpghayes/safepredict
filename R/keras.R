@@ -24,33 +24,33 @@ safe_predict.keras <- function(
 
 predict_keras_response <- function(object, new_data, ...) {
   pred <- predict(object, newdata = new_data)
-  maybe_multivariate(pred)
+  # maybe_multivariate(pred)
 }
 
 predict_keras_class <- function(object, new_data, ...) {
-  pred <- predict_classes(object, newdata = new_data)
+  # pred <- predict_classes(object, newdata = new_data)
 
   # need to recall levels of factor from model_fit object
-  post = function(x, object) {
-    object$lvl[x + 1]
-  }
-
-  post(pred)
+  # post <- function(x, object) {
+  #   object$lvl[x + 1]
+  # }
+  #
+  # post(pred)
 }
 
 predict_keras_prob <- function(object, new_data, ...) {
 
-  pred <- predict_proba(object, newdata = new_data)
+  # pred <- predict_proba(object, newdata = new_data)
 
   # TODO: use class_prob_helper here
 
   # MK missing a `post =` here?
-  function(x, object) {
-    x <- as_tibble(x)
-    colnames(x) <- object$lvl
-    x
-  }
-
-  post(pred)
+  # post <- function(x, object) {
+  #   x <- as_tibble(x)
+  #   colnames(x) <- object$lvl
+  #   x
+  # }
+  #
+  # post(pred)
 }
 

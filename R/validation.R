@@ -5,6 +5,9 @@ glubort <- function(..., .sep = "", .envir = parent.frame()) {
 could_not_dispatch_error <- function()
   abort("There's no method for the given object and type.")
 
+no_method_for_type_error <- function()
+  abort("There's no method for the given object and type.")
+
 validate_new_data <- function(new_data) {
 
   # what to do on zero length data? return a zero length tibble()?

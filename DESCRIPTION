@@ -24,7 +24,8 @@ Imports:
     probably,
     purrr,
     rlang,
-    tibble
+    tibble,
+    gratia (>= 0.1.6)
 Suggests: 
     covr,
     ggplot2,
@@ -39,8 +40,9 @@ Suggests:
     tidyr
 VignetteBuilder: 
     knitr
-Remotes: 
-    hadley/ellipsis
+Remotes:  
+    hadley/ellipsis,
+    gavinsimpson/gratia
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

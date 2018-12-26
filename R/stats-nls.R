@@ -6,6 +6,7 @@
 #'
 #'   - `"response"` (default): Standard predictions from non-linear regression.
 #'
+#' @template unused_dots
 #' @template return
 #'
 #' @export
@@ -32,7 +33,7 @@
 #'
 #'  **Delta Method**: Some people seem to be happy to use the delta method,
 #'  and others claim it is numerically unstable. Two options include
-#'  [car::DeltaMethod()] and [emdbook::deltavar()].
+#'  [car::deltaMethod()] and [emdbook::deltavar()].
 #'
 #' @examples
 #'

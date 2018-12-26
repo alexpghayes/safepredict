@@ -10,8 +10,7 @@
 \arguments{
 \item{object}{A \code{loess} object returned from a call to \code{\link[stats:loess]{stats::loess()}}.}
 
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
+\item{new_data}{TODO}
 
 \item{type}{What kind of predictions to return. Options are:
 \itemize{
@@ -20,19 +19,26 @@ coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.
 \item \code{"pred_int"}: Predictions with accompanying prediction interval.
 }}
 
-\item{...}{Unused.}
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
 
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
+\item{std_error}{Logical indicating whether or not calculate standard
+errors for the fit at each point. Not available for all models, and can
+be computationally expensive to compute. The standard error is \emph{always}
+the standard error for the mean, and \emph{never} the standard error for
+predictions. Standard errors are returned in a column called \code{.std_error}.
+Defaults to \code{FALSE}.}
 
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
+\item{level}{A number strictly between \code{0} and \code{1} to use as the
+confidence level when calculating confidence and prediction intervals.
+Setting \code{level = 0.90} correspondings to a 90 percent confidence interval.
+Ignored except when \code{type = "conf_int"} or \code{type = "pred_int"}. Defaults
+to \code{0.95}.}
 }
 \value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
+A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{new_data}.
 Predictions for observations with missing data will be \code{NA}. Returned
 tibble has different columns depending on \code{type}:
 \itemize{
@@ -49,6 +55,9 @@ outcome
 \item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
 }
 
+If you request standard errors with \code{std_error = TRUE}, an additional
+column \code{.std_error}.
+
 For interval predictions, the tibble has additional attributes \code{level}
 and \code{interval}. The \code{level} is the same as the \code{level} argument and is
 between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
@@ -58,15 +67,6 @@ used to calculate the intervals.
 \description{
 Safe predictions from a loess object
 }
-\section{Confidence vs prediction intervals}{
-
-
-For details on the difference between confidence and prediction intervals,
-see the \href{TODO}{online documentation}. This is also available as a vignette
-that you can access with:\preformatted{vignette("intervals", package = "safepredict")
-}
-}
-
 \examples{
 
 fit <- loess(mpg ~ wt, mtcars)
@@ -76,7 +76,7 @@ safe_predict(fit, mtcars, std_error = TRUE)
 # the default behavior of loess() is return NA for values
 # outside the range of the training data:
 
-safe_predict(fit, tibble(wt = 1:10))
+safe_predict(fit, data.frame(wt = 1:10))
 
 # to enable extrapolation, use:
 
@@ -86,6 +86,6 @@ fit2 <- loess(
    control = loess.control(surface = "direct")
 )
 
-safe_predict(fit2, tibble(wt = 1:10), type = "pred_int", level = 0.9)
+safe_predict(fit2, data.frame(wt = 1:10), type = "pred_int", level = 0.9)
 
 }

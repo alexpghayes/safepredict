@@ -5,14 +5,13 @@
 \title{Safe predictions from a generalized linear model}
 \usage{
 \method{safe_predict}{glm}(object, new_data, type = c("link", "conf_int",
-  "response", "class", "prob"), std_error = FALSE, level = 0.95,
-  threshold = 0.5, ...)
+  "response", "class", "prob"), ..., std_error = FALSE, level = 0.95,
+  threshold = 0.5)
 }
 \arguments{
 \item{object}{A \code{glm} object returned from a call to \code{\link[stats:glm]{stats::glm()}}.}
 
-\item{new_data}{A dataset as a \link{data.frame} or similar object. Must be
-coercable to a tibble using \code{\link[tibble:as_tibble]{tibble::as_tibble()}}.}
+\item{new_data}{TODO}
 
 \item{type}{What kind of predictions to return. Which predictions are
 available depends on the family of \code{object}.
@@ -40,46 +39,28 @@ available for \code{binomial} and \code{quasibinomial} families
 
 Default is \code{"link"}.}
 
-\item{level}{A number between \code{0} and \code{1} to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.}
+\item{...}{Unused. \code{safe_predict()} checks that all arguments in \code{...} are
+evaluated via the \code{ellipsis} package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.}
+
+\item{std_error}{Logical indicating whether or not calculate standard
+errors for the fit at each point. Not available for all models, and can
+be computationally expensive to compute. The standard error is \emph{always}
+the standard error for the mean, and \emph{never} the standard error for
+predictions. Standard errors are returned in a column called \code{.std_error}.
+Defaults to \code{FALSE}.}
+
+\item{level}{A number strictly between \code{0} and \code{1} to use as the
+confidence level when calculating confidence and prediction intervals.
+Setting \code{level = 0.90} correspondings to a 90 percent confidence interval.
+Ignored except when \code{type = "conf_int"} or \code{type = "pred_int"}. Defaults
+to \code{0.95}.}
 
 \item{threshold}{A number between \code{0} and \code{1} to use as a threshold for
 classification. When the class probability for the class corresponding
 to a positive event is greater than the threshold, the event will be
-classified as positive. Defaults to \code{0.5}. See \code{\link[=positive_class]{positive_class()}} for
-assistance determining which class is considered the positive class.}
-
-\item{...}{Unused.}
-
-\item{se_fit}{Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.}
-}
-\value{
-A \code{\link[tibble:tibble]{tibble::tibble()}} with one row for each row of \code{newdata}.
-Predictions for observations with missing data will be \code{NA}. Returned
-tibble has different columns depending on \code{type}:
-\itemize{
-\item \code{"response"}:
-\itemize{
-\item univariate outcome: \code{.pred} (numeric)
-\item multivariate outcomes: \code{.pred_{outcome name}} (numeric) for each
-outcome
-}
-\item \code{"class"}: \code{.pred_class} (factor)
-\item \code{"prob"}: \code{.pred_{level}} columns (numerics between 0 and 1)
-\item \code{"link"}: \code{.pred} (numeric)
-\item \code{"conf_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
-\item \code{"pred_int"}: \code{.pred}, \code{.pred_lower}, \code{.pred_upper} (all numeric)
-}
-
-For interval predictions, the tibble has additional attributes \code{level}
-and \code{interval}. The \code{level} is the same as the \code{level} argument and is
-between 0 and 1. \code{interval} is either \code{"confidence"} or \code{"prediction"}.
-Some models may also set a \code{method} attribute to detail the method
-used to calculate the intervals.
+classified as positive. Defaults to \code{0.5}.}
 }
 \description{
 Safe predictions from a generalized linear model

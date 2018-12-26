@@ -6,8 +6,10 @@
 #' @param penalty Unlike [safe_predict.cv.glmnet()], here you can explicitly
 #'   set a value of `penalty`. In the CV version you have to pick one of the
 #'   cross-validated versions of the penalty.
+#' @template unused_dots
+#' @template threshold
 #'
-#' @template boilerplate
+#' @template return
 #'
 #' @export
 #'
@@ -20,16 +22,15 @@ safe_predict.glmnet <- function(
     "prob",
     "link"
   ),
+  ...,
   penalty = NULL,
   # MK Should `threshold` be here? It's only applicable to 2 class models.
   # AH I could dispatch on the subclasses instead? Then link to the all those
   # AH documentation pages in the doc for `safe_predict.glmnet?`?
-  threshold = 0.5,
-  ...) {
+  threshold = 0.5) {
 
   ## input validation
 
-  new_data <- Matrix::as.matrix(new_data)
   type <- arg_match(type)
 
   if (is.null(penalty) || length(penalty) > 1)
