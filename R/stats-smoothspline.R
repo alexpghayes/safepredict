@@ -61,8 +61,9 @@
 #' # to get estimated derivatives from smooths use gratia,
 #' # which extends mgcv
 #'
-#' library(gratia)  # TODO: gratia isn't on CRAN yet
-#' fderiv(fit2)
+#' \dontrun{
+#' gratia::fderiv(fit2)  # TODO: gratia isn't on CRAN yet
+#' }
 #'
 safe_predict.smooth.spline <- function(
   object,

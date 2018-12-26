@@ -99,7 +99,8 @@ predict(fit2, mtcars)  # TODO: update with safe_predict once implemented
 # to get estimated derivatives from smooths use gratia,
 # which extends mgcv
 
-library(gratia)  # TODO: gratia isn't on CRAN yet
-fderiv(fit2)
+\dontrun{
+gratia::fderiv(fit2)  # TODO: gratia isn't on CRAN yet
+}
 
 }
