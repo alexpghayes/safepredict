@@ -142,7 +142,7 @@
 
     <pre class="usage"><span class='co'># S3 method for glmnet</span>
 <span class='fu'><a href='safe_predict.html'>safe_predict</a></span>(<span class='no'>object</span>, <span class='no'>new_data</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"response"</span>,
-  <span class='st'>"class"</span>, <span class='st'>"prob"</span>, <span class='st'>"link"</span>), <span class='kw'>penalty</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='no'>...</span>)</pre>
+  <span class='st'>"class"</span>, <span class='st'>"prob"</span>, <span class='st'>"link"</span>), <span class='no'>...</span>, <span class='kw'>penalty</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>threshold</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -160,38 +160,30 @@
       <td><p>TODO</p></td>
     </tr>
     <tr>
+      <th>...</th>
+      <td><p>Unused. <code><a href='safe_predict.html'>safe_predict()</a></code> checks that all arguments in <code>...</code> are
+evaluated via the <code>ellipsis</code> package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.</p></td>
+    </tr>
+    <tr>
       <th>penalty</th>
       <td><p>Unlike <code><a href='safe_predict.cv.glmnet.html'>safe_predict.cv.glmnet()</a></code>, here you can explicitly
 set a value of <code>penalty</code>. In the CV version you have to pick one of the
 cross-validated versions of the penalty.</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>Unused.</p></td>
-    </tr>
-    <tr>
-      <th>new_data</th>
-      <td><p>A dataset as a <a href='https://www.rdocumentation.org/packages/base/topics/data.frame'>data.frame</a> or similar object. Must be
-coercable to a tibble using <code><a href='https://www.rdocumentation.org/packages/tibble/topics/as_tibble'>tibble::as_tibble()</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>se_fit</th>
-      <td><p>Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.</p></td>
-    </tr>
-    <tr>
-      <th>level</th>
-      <td><p>A number between <code>0</code> and <code>1</code> to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.</p></td>
+      <th>threshold</th>
+      <td><p>A number between <code>0</code> and <code>1</code> to use as a threshold for
+classification. When the class probability for the class corresponding
+to a positive event is greater than the threshold, the event will be
+classified as positive. Defaults to <code>0.5</code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code><a href='https://www.rdocumentation.org/packages/tibble/topics/tibble'>tibble::tibble()</a></code> with one row for each row of <code>newdata</code>.
+    <p>A <code><a href='https://www.rdocumentation.org/packages/tibble/topics/tibble'>tibble::tibble()</a></code> with one row for each row of <code>new_data</code>.
 Predictions for observations with missing data will be <code>NA</code>. Returned
 tibble has different columns depending on <code>type</code>:</p><ul>
 <li><p><code>"response"</code>:</p><ul>
@@ -206,6 +198,8 @@ outcome</p></li>
 <li><p><code>"pred_int"</code>: <code>.pred</code>, <code>.pred_lower</code>, <code>.pred_upper</code> (all numeric)</p></li>
 </ul>
 
+<p>If you request standard errors with <code>std_error = TRUE</code>, an additional
+column <code>.std_error</code>.</p>
 <p>For interval predictions, the tibble has additional attributes <code>level</code>
 and <code>interval</code>. The <code>level</code> is the same as the <code>level</code> argument and is
 between 0 and 1. <code>interval</code> is either <code>"confidence"</code> or <code>"prediction"</code>.

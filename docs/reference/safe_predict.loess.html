@@ -153,8 +153,7 @@
     </tr>
     <tr>
       <th>new_data</th>
-      <td><p>A dataset as a <a href='https://www.rdocumentation.org/packages/base/topics/data.frame'>data.frame</a> or similar object. Must be
-coercable to a tibble using <code><a href='https://www.rdocumentation.org/packages/tibble/topics/as_tibble'>tibble::as_tibble()</a></code>.</p></td>
+      <td><p>TODO</p></td>
     </tr>
     <tr>
       <th>type</th>
@@ -166,26 +165,33 @@ coercable to a tibble using <code><a href='https://www.rdocumentation.org/packag
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Unused.</p></td>
+      <td><p>Unused. <code><a href='safe_predict.html'>safe_predict()</a></code> checks that all arguments in <code>...</code> are
+evaluated via the <code>ellipsis</code> package. The idea is to prevent silent errors
+when arguments are mispelled. This feature is experimental and feedback
+is welcome.</p></td>
+    </tr>
+    <tr>
+      <th>std_error</th>
+      <td><p>Logical indicating whether or not calculate standard
+errors for the fit at each point. Not available for all models, and can
+be computationally expensive to compute. The standard error is <em>always</em>
+the standard error for the mean, and <em>never</em> the standard error for
+predictions. Standard errors are returned in a column called <code>.std_error</code>.
+Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>level</th>
-      <td><p>A number between <code>0</code> and <code>1</code> to use as the confidence level
-when calculating confidence and prediction intervals. Ignored
-otherwise.</p></td>
-    </tr>
-    <tr>
-      <th>se_fit</th>
-      <td><p>Logical indicating whether or not to also calculate standard
-errors for the fit at each point. These standard errors do not include
-the residual variance. Ignored when calculating a confidence or prediction
-interval.</p></td>
+      <td><p>A number strictly between <code>0</code> and <code>1</code> to use as the
+confidence level when calculating confidence and prediction intervals.
+Setting <code>level = 0.90</code> correspondings to a 90 percent confidence interval.
+Ignored except when <code>type = "conf_int"</code> or <code>type = "pred_int"</code>. Defaults
+to <code>0.95</code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code><a href='https://www.rdocumentation.org/packages/tibble/topics/tibble'>tibble::tibble()</a></code> with one row for each row of <code>newdata</code>.
+    <p>A <code><a href='https://www.rdocumentation.org/packages/tibble/topics/tibble'>tibble::tibble()</a></code> with one row for each row of <code>new_data</code>.
 Predictions for observations with missing data will be <code>NA</code>. Returned
 tibble has different columns depending on <code>type</code>:</p><ul>
 <li><p><code>"response"</code>:</p><ul>
@@ -200,19 +206,13 @@ outcome</p></li>
 <li><p><code>"pred_int"</code>: <code>.pred</code>, <code>.pred_lower</code>, <code>.pred_upper</code> (all numeric)</p></li>
 </ul>
 
+<p>If you request standard errors with <code>std_error = TRUE</code>, an additional
+column <code>.std_error</code>.</p>
 <p>For interval predictions, the tibble has additional attributes <code>level</code>
 and <code>interval</code>. The <code>level</code> is the same as the <code>level</code> argument and is
 between 0 and 1. <code>interval</code> is either <code>"confidence"</code> or <code>"prediction"</code>.
 Some models may also set a <code>method</code> attribute to detail the method
 used to calculate the intervals.</p>
-    
-    <h2 class="hasAnchor" id="confidence-vs-prediction-intervals"><a class="anchor" href="#confidence-vs-prediction-intervals"></a>Confidence vs prediction intervals</h2>
-
-    
-    <p>For details on the difference between confidence and prediction intervals,
-see the <a href='TODO'>online documentation</a>. This is also available as a vignette
-that you can access with:</p><pre>vignette("intervals", package = "safepredict")
-</pre>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -248,7 +248,19 @@ that you can access with:</p><pre>vignette("intervals", package = "safepredict")
 <span class='co'># the default behavior of loess() is return NA for values</span>
 <span class='co'># outside the range of the training data:</span>
 
-<span class='fu'><a href='safe_predict.html'>safe_predict</a></span>(<span class='no'>fit</span>, <span class='fu'>tibble</span>(<span class='kw'>wt</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>))</div><div class='output co'>#&gt; <span class='error'>Error in tibble(wt = 1:10): could not find function "tibble"</span></div><div class='input'>
+<span class='fu'><a href='safe_predict.html'>safe_predict</a></span>(<span class='no'>fit</span>, <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/data.frame'>data.frame</a></span>(<span class='kw'>wt</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>))</div><div class='output co'>#&gt; </span><span style='color: #555555;'># A tibble: 10 x 1</span><span>
+#&gt;    .pred
+#&gt;    </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #555555;'> 1</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  
+#&gt; </span><span style='color: #555555;'> 2</span><span>  27.9
+#&gt; </span><span style='color: #555555;'> 3</span><span>  20.5
+#&gt; </span><span style='color: #555555;'> 4</span><span>  15.3
+#&gt; </span><span style='color: #555555;'> 5</span><span>  12.4
+#&gt; </span><span style='color: #555555;'> 6</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  
+#&gt; </span><span style='color: #555555;'> 7</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  
+#&gt; </span><span style='color: #555555;'> 8</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  
+#&gt; </span><span style='color: #555555;'> 9</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  
+#&gt; </span><span style='color: #555555;'>10</span><span>  </span><span style='color: #BB0000;'>NA</span><span>  </div><div class='input'>
 <span class='co'># to enable extrapolation, use:</span>
 
 <span class='no'>fit2</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/loess'>loess</a></span>(
@@ -257,7 +269,19 @@ that you can access with:</p><pre>vignette("intervals", package = "safepredict")
    <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/loess.control'>loess.control</a></span>(<span class='kw'>surface</span> <span class='kw'>=</span> <span class='st'>"direct"</span>)
 )
 
-<span class='fu'><a href='safe_predict.html'>safe_predict</a></span>(<span class='no'>fit2</span>, <span class='fu'>tibble</span>(<span class='kw'>wt</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>), <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"pred_int"</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</div><div class='output co'>#&gt; <span class='error'>Error in tibble(wt = 1:10): could not find function "tibble"</span></div><div class='input'>
+<span class='fu'><a href='safe_predict.html'>safe_predict</a></span>(<span class='no'>fit2</span>, <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/data.frame'>data.frame</a></span>(<span class='kw'>wt</span> <span class='kw'>=</span> <span class='fl'>1</span>:<span class='fl'>10</span>), <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"pred_int"</span>, <span class='kw'>level</span> <span class='kw'>=</span> <span class='fl'>0.9</span>)</div><div class='output co'>#&gt; </span><span style='color: #555555;'># A tibble: 10 x 3</span><span>
+#&gt;    .pred .pred_lower .pred_upper
+#&gt;    </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>       </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>       </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span>
+#&gt; </span><span style='color: #555555;'> 1</span><span>  35.0        45.0       25.0 
+#&gt; </span><span style='color: #555555;'> 2</span><span>  27.9        32.8       23.0 
+#&gt; </span><span style='color: #555555;'> 3</span><span>  21.2        26.2       16.3 
+#&gt; </span><span style='color: #555555;'> 4</span><span>  15.1        20.1       10.1 
+#&gt; </span><span style='color: #555555;'> 5</span><span>  12.3        17.4        7.22
+#&gt; </span><span style='color: #555555;'> 6</span><span>  11.4        19.8        3.00
+#&gt; </span><span style='color: #555555;'> 7</span><span>  11.5        33.6      -</span><span style='color: #BB0000;'>10.6</span><span> 
+#&gt; </span><span style='color: #555555;'> 8</span><span>  12.6        58.8      -</span><span style='color: #BB0000;'>33.7</span><span> 
+#&gt; </span><span style='color: #555555;'> 9</span><span>  14.6        95.8      -</span><span style='color: #BB0000;'>66.7</span><span> 
+#&gt; </span><span style='color: #555555;'>10</span><span>  17.5       145.      -</span><span style='color: #BB0000;'>110.</span><span>  </div><div class='input'>
 </div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -266,8 +290,6 @@ that you can access with:</p><pre>vignette("intervals", package = "safepredict")
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#confidence-vs-prediction-intervals">Confidence vs prediction intervals</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

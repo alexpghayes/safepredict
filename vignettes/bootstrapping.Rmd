@@ -13,7 +13,8 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  eval = FALSE
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
@@ -128,106 +129,4 @@ pred_ci <- boot_preds %>%
 
 pred_ci
 ```
-
-## bootstrapping for *predictive* intervals
-
-based on: The method laid out below is the one described in Section 6.3.3 of Davidson and Hinckley (1997), Bootstrap Methods and Their Application
-
-described in detail for OLS [here][so_predictive_bootstrap]. two differences: use deviance residuals and the optimism bootstrap, but much in the same spirit
-
-[so_predictive_bootstrap]: 
-https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval
-
-is there a way to get the errors from the optimism bootstrap?
-
-```{r}
-pred <- safe_predict(fit, x, type = "prob")
-
-
-# for multiclass classification problems you'll need to use
-# multinomial deviance residuals. for continuous outcomes you
-# can use standard residuals
-
-# https://stats.stackexchange.com/questions/166585/pearson-vs-deviance-residuals-in-logistic-regression
-
-logreg_deviance_residuals <- function(probs, y) {
-  pi <- probs$.pred_Yes
-  y <- if_else(y == "Yes", 1, 0)
-  s <- if_else(y == "Yes", 1, -1)
-  s * sqrt(-2 * (y * log(pi) + (1 - y) * log(1 - pi)))
-}
-
-res <- logreg_deviance_residuals(pred, attrition$Attrition)
-head(res)
-```
-
-```{r}
-dev_res_opt
-
-dev_res_opt <- fits %>% 
-  mutate(
-    preds = map2(model, x_train, safe_predict, type = "prob"),
-    dev_res = map2(preds, y_train, logreg_deviance_residuals),
-    optimism = map_dbl(dev_res, ~sd(res) / sd(.x))
-  )
-
-optimism <- mean(dev_res_opt$optimism)
-optimism
-
-# rescale deviance residuals to have optimism correct variance
-corrected <- res * optimism
-
-correct_probs <- function(probs) {
-  # pick a random error to add to the prediction
-  # again, recall this is on the deviance scale
-  error <- sample(corrected, 1)
-  
-  mutate(probs,)
-  
-  probs$.pred_Yes <- 
-}
-
-dev_res_opt %>% 
-  mutate(
-    corrected_preds = map(preds, )
-  )
-  
-
-map(fits$model, fits$train, safe_)
-
-for (i in 1:10)
-  print(safe_predict(fits$model[[i]], fits$x_train[[i]], type = "prob"))
-fits
-```
-
-
-```{r}
-boot_preds <- fits %>% 
-  mutate(
-    preds = map(model, safe_predict, x, type = "prob"),
-    preds = map(preds, add_id_column)
-  ) %>% 
-  unnest(preds, .id = "model")
-```
-
-
-
-calculate the original residuals
-calculate optimism bootstrap residuals
-look at the optimism of the original residuals, rescale them by the calculated optimism
-use the bootstraps to estimate predictions, then add rescaled residuals back
-
-
-## Working with hard class predictions
-
-If you are working with hard class predictions you could still bootstrapping, calc
-
-
-for continuous outcomes. what to do if you only had hard class predictions? multinomial proportions stuff
-
-## References
-
-
-https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20130014367.pdf
-
 

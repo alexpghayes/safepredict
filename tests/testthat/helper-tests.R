@@ -8,19 +8,19 @@ expect_same_content <- function(df_like_1, df_like_2) {
   expect_equivalent(df1, df2)
 }
 
-method <- safe_predict.loess
-
 check_safepredict_signature <- function(object) {
 
   act <- quasi_label(rlang::enquo(object))
 
+  # TODO: must appear in this order
   allowed_args <- c(
     "object",
     "new_data",
     "type",
     "...",
     "std_error",
-    "level"
+    "level",
+    "threshold"
   )
 
   arglist <- as.list(formals(act$val))
@@ -34,6 +34,10 @@ check_safepredict_signature <- function(object) {
       "The following arguments are not allowed: {not_allowed_args}"
     ),
   )
+
+  # TODO: probs should always come before class (i.e. probs
+  # should be the default). and probs instead of prob. i.e.
+  # include the s
 
   allowed_types <- c(
     "response",
@@ -225,6 +229,12 @@ check_predict_output_response <- function(object, passed_data) {
     NCOL(act$val) == 1,
     glue("{act$lab} did not have exactly one column.")
   )
+}
+
+check_predict_output_prob <- function(object, passed_data) {
+}
+
+check_predict_output_class <- function(object, passed_data) {
 }
 
 check_predict_output_interval <- function(object, passed_data) {

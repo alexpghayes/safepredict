@@ -100,7 +100,10 @@ predict(fit2, mtcars)  # TODO: update with safe_predict once implemented
 # which extends mgcv
 
 \dontrun{
-gratia::fderiv(fit2)  # TODO: gratia isn't on CRAN yet
+# gratia is not on CRAN yet, but you can install it with:
+# devtools::install_github("gavinsimpson/gratia")
+
+gratia::fderiv(fit2)
 }
 
 }

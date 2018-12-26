@@ -25,19 +25,19 @@ validate_new_data <- function(new_data) {
 validate_logical <- function(x) {
   arg_name <- as.character(substitute(x))
   if (!is.logical(x) || length(x) != 1)
-    glubort("{arg_name} must be a logical vector with one element.")
+    glubort("`{arg_name}` must be a logical vector with one element.")
 }
 
 validate_probability <- function(x) {
   arg_name <- as.character(substitute(x))
   if (!is.numeric(x) || length(x) != 1 || x <= 0 || x >= 1)
     glubort(
-      "{arg_name} must be a vector with one element strictly between 0 and 1."
+      "`{arg_name}` must be a vector with one element strictly between 0 and 1."
     )
 }
 
 validate_positive <- function(x) {
   arg_name <- as.character(substitute(x))
   if (!is.numeric(x) || x <= 0)
-    glubort("{arg_name} must be a positive vector with one positive element")
+    glubort("`{arg_name}` must be a positive vector with one positive element.")
 }

@@ -100,7 +100,7 @@
       <h1>Assessing prediction uncertainty with the bootstrap</h1>
                         <h4 class="author">Alex Hayes</h4>
             
-            <h4 class="date">2018-12-19</h4>
+            <h4 class="date">2018-12-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/alexpghayes/safepredict/blob/master/vignettes/bootstrapping.Rmd"><code>vignettes/bootstrapping.Rmd</code></a></small>
       <div class="hidden name"><code>bootstrapping.Rmd</code></div>
@@ -111,354 +111,149 @@
     
 <p>This vignette walks demonstrates how to estimate uncertainty in predictions via the bootstrap. We use <a href="https://tidymodels.github.io/rsample/"><code>rsample</code></a> throughout. First we show how to calculate confidence intervals, and then how to calculate predictive intervals. If you are unfamiliar with the difference between these two, we highly recommend that you read <code><a href="../articles/intervals.html">vignette("intervals", package = "safepredict")</a></code>.</p>
 <p>Throughout this vignette we use the nonparametric bootstrap, which is more robust than the parametric bootstrap and does not require us to assumption that we have a correctly specified model. The parametric bootstrap will give you tighter intervals than the procedures we outline here, but we recommend against this unless you are <em>very, very</em> certain that you have correctly specified your model.</p>
+<p>This vignette assumes you are interested in a continuous outcome.</p>
 <div id="bootstrapped-confidence-intervals" class="section level2">
 <h2 class="hasAnchor">
 <a href="#bootstrapped-confidence-intervals" class="anchor"></a>Bootstrapped confidence intervals</h2>
-<p>for continuous outcomes. what to do if you only had hard class predictions? multinomial proportions stuff</p>
-<p>UGH THINK ABOUT THIS. this is like out of bag confidence intervals</p>
-<p>Let <span class="math inline">\(X\)</span> be the original data (containing both predictors and outcome). Split it into a training set <span class="math inline">\(X_0\)</span> and a test set <span class="math inline">\(X'\)</span>.</p>
+<p>Let <span class="math inline">\(X\)</span> be the original data (containing both predictors and outcome).</p>
 <ol style="list-style-type: decimal">
-<li>Sample the rows of <span class="math inline">\(X_0\)</span> with replacement <span class="math inline">\(1, ..., B\)</span> times to create bootstrapped data sets <span class="math inline">\(X_1^*, ..., X_B^*\)</span>.</li>
+<li>Sample the rows of <span class="math inline">\(X\)</span> with replacement <span class="math inline">\(1, ..., B\)</span> times to create bootstrapped data sets <span class="math inline">\(X_1^*, ..., X_B^*\)</span>.</li>
 <li>Fit your model of choice on each bootstrapped data set and obtain fits <span class="math inline">\(\hat f_1, ..., \hat f_B\)</span>.</li>
-<li>Predict the mean at <span class="math inline">\(X'\)</span> with each <span class="math inline">\(\hat f_i\)</span> to get samples from the sampling distribution of <span class="math inline">\(f(X')\)</span>.</li>
-<li>Look at the appropriate quantiles of <span class="math inline">\(f(X')\)</span>. You’re done!</li>
+<li>Predict the mean at <span class="math inline">\(X\)</span> with each <span class="math inline">\(\hat f_i\)</span> to get samples from the sampling distribution of <span class="math inline">\(f(X)\)</span>.</li>
+<li>Look at the appropriate quantiles of <span class="math inline">\(f(X)\)</span>. You’re done!</li>
 </ol>
-<p>bootstrap out of sample estimate</p>
-<p>The OOB estimate, which</p>
-<p>algorithm:</p>
-<ol style="list-style-type: decimal">
-<li>fit a bunch of bootstrapped models</li>
-<li>predict the mean with each of the bootstrapped models</li>
-<li>look at the quantiles of these predictions</li>
-</ol>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidymodels)</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="co">#&gt; Warning: package 'tidymodels' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="co">#&gt; -- Attaching packages ------ tidymodels 0.0.2 --</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="co">#&gt; v broom     0.5.1          v purrr     0.2.5.9000</span></a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">#&gt; v dials     0.0.2          v recipes   0.1.4     </span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">#&gt; v dplyr     0.7.8          v rsample   0.0.3     </span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">#&gt; v ggplot2   3.1.0          v tibble    1.4.2     </span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">#&gt; v infer     0.4.0          v yardstick 0.0.2     </span></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">#&gt; v parsnip   0.0.1</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="co">#&gt; Warning: package 'broom' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="co">#&gt; Warning: package 'scales' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="co">#&gt; Warning: package 'dplyr' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="co">#&gt; Warning: package 'ggplot2' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="co">#&gt; Warning: package 'infer' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="co">#&gt; Warning: package 'parsnip' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-16" data-line-number="16"><span class="co">#&gt; Warning: package 'recipes' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-17" data-line-number="17"><span class="co">#&gt; Warning: package 'rsample' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="co">#&gt; Warning: package 'tidyr' was built under R version 3.5.1</span></a>
-<a class="sourceLine" id="cb1-19" data-line-number="19"><span class="co">#&gt; -- Conflicts --------- tidymodels_conflicts() --</span></a>
-<a class="sourceLine" id="cb1-20" data-line-number="20"><span class="co">#&gt; x purrr::discard() masks scales::discard()</span></a>
-<a class="sourceLine" id="cb1-21" data-line-number="21"><span class="co">#&gt; x rsample::fill()  masks tidyr::fill()</span></a>
-<a class="sourceLine" id="cb1-22" data-line-number="22"><span class="co">#&gt; x dplyr::filter()  masks stats::filter()</span></a>
-<a class="sourceLine" id="cb1-23" data-line-number="23"><span class="co">#&gt; x dplyr::lag()     masks stats::lag()</span></a>
-<a class="sourceLine" id="cb1-24" data-line-number="24"><span class="co">#&gt; x recipes::step()  masks stats::step()</span></a>
-<a class="sourceLine" id="cb1-25" data-line-number="25"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(safepredict)</a>
-<a class="sourceLine" id="cb1-26" data-line-number="26"></a>
-<a class="sourceLine" id="cb1-27" data-line-number="27"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">27</span>)</a>
-<a class="sourceLine" id="cb1-28" data-line-number="28"></a>
-<a class="sourceLine" id="cb1-29" data-line-number="29">attrition &lt;-<span class="st"> </span>attrition <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb1-30" data-line-number="30"><span class="st">  </span><span class="kw">sample_n</span>(<span class="dv">500</span>)</a>
-<a class="sourceLine" id="cb1-31" data-line-number="31"></a>
-<a class="sourceLine" id="cb1-32" data-line-number="32"><span class="kw">glimpse</span>(attrition)</a>
-<a class="sourceLine" id="cb1-33" data-line-number="33"><span class="co">#&gt; Observations: 500</span></a>
-<a class="sourceLine" id="cb1-34" data-line-number="34"><span class="co">#&gt; Variables: 31</span></a>
-<a class="sourceLine" id="cb1-35" data-line-number="35"><span class="co">#&gt; $ Age                      &lt;int&gt; 32, 51, 33, 31, 31, 50, 50, 33, 27, 5...</span></a>
-<a class="sourceLine" id="cb1-36" data-line-number="36"><span class="co">#&gt; $ Attrition                &lt;fct&gt; No, No, No, Yes, No, No, No, No, No, ...</span></a>
-<a class="sourceLine" id="cb1-37" data-line-number="37"><span class="co">#&gt; $ BusinessTravel           &lt;fct&gt; Travel_Rarely, Travel_Rarely, Travel_...</span></a>
-<a class="sourceLine" id="cb1-38" data-line-number="38"><span class="co">#&gt; $ DailyRate                &lt;int&gt; 234, 684, 867, 1365, 798, 691, 1115, ...</span></a>
-<a class="sourceLine" id="cb1-39" data-line-number="39"><span class="co">#&gt; $ Department               &lt;fct&gt; Sales, Research_Development, Research...</span></a>
-<a class="sourceLine" id="cb1-40" data-line-number="40"><span class="co">#&gt; $ DistanceFromHome         &lt;int&gt; 1, 6, 8, 13, 7, 2, 1, 3, 1, 3, 4, 24,...</span></a>
-<a class="sourceLine" id="cb1-41" data-line-number="41"><span class="co">#&gt; $ Education                &lt;ord&gt; Master, Bachelor, Master, Master, Col...</span></a>
-<a class="sourceLine" id="cb1-42" data-line-number="42"><span class="co">#&gt; $ EducationField           &lt;fct&gt; Medical, Life_Sciences, Life_Sciences...</span></a>
-<a class="sourceLine" id="cb1-43" data-line-number="43"><span class="co">#&gt; $ EnvironmentSatisfaction  &lt;ord&gt; Medium, Low, Very_High, Medium, High,...</span></a>
-<a class="sourceLine" id="cb1-44" data-line-number="44"><span class="co">#&gt; $ Gender                   &lt;fct&gt; Male, Male, Male, Male, Female, Male,...</span></a>
-<a class="sourceLine" id="cb1-45" data-line-number="45"><span class="co">#&gt; $ HourlyRate               &lt;int&gt; 68, 51, 90, 46, 48, 64, 73, 56, 60, 4...</span></a>
-<a class="sourceLine" id="cb1-46" data-line-number="46"><span class="co">#&gt; $ JobInvolvement           &lt;ord&gt; Medium, High, Very_High, High, Medium...</span></a>
-<a class="sourceLine" id="cb1-47" data-line-number="47"><span class="co">#&gt; $ JobLevel                 &lt;int&gt; 1, 5, 1, 2, 3, 4, 5, 1, 2, 4, 5, 2, 2...</span></a>
-<a class="sourceLine" id="cb1-48" data-line-number="48"><span class="co">#&gt; $ JobRole                  &lt;fct&gt; Sales_Representative, Research_Direct...</span></a>
-<a class="sourceLine" id="cb1-49" data-line-number="49"><span class="co">#&gt; $ JobSatisfaction          &lt;ord&gt; Medium, High, Low, Low, High, High, M...</span></a>
-<a class="sourceLine" id="cb1-50" data-line-number="50"><span class="co">#&gt; $ MaritalStatus            &lt;fct&gt; Married, Single, Married, Divorced, M...</span></a>
-<a class="sourceLine" id="cb1-51" data-line-number="51"><span class="co">#&gt; $ MonthlyIncome            &lt;int&gt; 2269, 19537, 3143, 4233, 8943, 17639,...</span></a>
-<a class="sourceLine" id="cb1-52" data-line-number="52"><span class="co">#&gt; $ MonthlyRate              &lt;int&gt; 18024, 6462, 6076, 11512, 14034, 6881...</span></a>
-<a class="sourceLine" id="cb1-53" data-line-number="53"><span class="co">#&gt; $ NumCompaniesWorked       &lt;int&gt; 0, 7, 6, 2, 1, 5, 3, 1, 5, 3, 2, 2, 1...</span></a>
-<a class="sourceLine" id="cb1-54" data-line-number="54"><span class="co">#&gt; $ OverTime                 &lt;fct&gt; No, No, No, No, No, No, Yes, Yes, No,...</span></a>
-<a class="sourceLine" id="cb1-55" data-line-number="55"><span class="co">#&gt; $ PercentSalaryHike        &lt;int&gt; 14, 13, 19, 17, 24, 16, 19, 11, 19, 1...</span></a>
-<a class="sourceLine" id="cb1-56" data-line-number="56"><span class="co">#&gt; $ PerformanceRating        &lt;ord&gt; Excellent, Excellent, Excellent, Exce...</span></a>
-<a class="sourceLine" id="cb1-57" data-line-number="57"><span class="co">#&gt; $ RelationshipSatisfaction &lt;ord&gt; Medium, High, Medium, High, Low, Very...</span></a>
-<a class="sourceLine" id="cb1-58" data-line-number="58"><span class="co">#&gt; $ StockOptionLevel         &lt;int&gt; 1, 0, 1, 0, 1, 0, 0, 0, 1, 3, 1, 0, 0...</span></a>
-<a class="sourceLine" id="cb1-59" data-line-number="59"><span class="co">#&gt; $ TotalWorkingYears        &lt;int&gt; 3, 23, 14, 9, 10, 30, 28, 8, 6, 21, 2...</span></a>
-<a class="sourceLine" id="cb1-60" data-line-number="60"><span class="co">#&gt; $ TrainingTimesLastYear    &lt;int&gt; 2, 5, 1, 2, 2, 3, 1, 3, 1, 5, 2, 3, 2...</span></a>
-<a class="sourceLine" id="cb1-61" data-line-number="61"><span class="co">#&gt; $ WorkLifeBalance          &lt;ord&gt; Better, Better, Better, Bad, Better, ...</span></a>
-<a class="sourceLine" id="cb1-62" data-line-number="62"><span class="co">#&gt; $ YearsAtCompany           &lt;int&gt; 2, 20, 10, 3, 10, 4, 8, 8, 2, 5, 1, 5...</span></a>
-<a class="sourceLine" id="cb1-63" data-line-number="63"><span class="co">#&gt; $ YearsInCurrentRole       &lt;int&gt; 2, 18, 8, 1, 9, 3, 3, 7, 2, 3, 0, 4, ...</span></a>
-<a class="sourceLine" id="cb1-64" data-line-number="64"><span class="co">#&gt; $ YearsSinceLastPromotion  &lt;int&gt; 2, 15, 7, 1, 8, 0, 0, 3, 2, 1, 0, 1, ...</span></a>
-<a class="sourceLine" id="cb1-65" data-line-number="65"><span class="co">#&gt; $ YearsWithCurrManager     &lt;int&gt; 2, 15, 6, 2, 9, 3, 7, 0, 0, 3, 0, 4, ...</span></a></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">rec &lt;-<span class="st"> </span><span class="kw">recipe</span>(Attrition <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> attrition) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="st">  </span><span class="kw">step_center</span>(<span class="kw">all_numeric</span>()) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="st">  </span><span class="kw">step_scale</span>(<span class="kw">all_numeric</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="st">  </span><span class="kw">step_dummy</span>(<span class="kw">all_nominal</span>(), <span class="op">-</span>Attrition) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="st">  </span><span class="kw">prep</span>()</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">rec</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8"><span class="co">#&gt; Data Recipe</span></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="co">#&gt; Inputs:</span></a>
+<p>Let’s work through an example, using <code>glmnet</code> for a binary classification problem. Our goal will be to predict <code>Attrition</code> based on 30 predictors variables.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(dplyr)</a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(rsample)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/Random">set.seed</a></span>(<span class="dv">27</span>)</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">attrition &lt;-<span class="st"> </span>attrition <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="st">  </span><span class="kw">sample_n</span>(<span class="dv">500</span>)</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="kw">glimpse</span>(attrition)</a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="co">#&gt; Observations: 500</span></a>
+<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="co">#&gt; Variables: 31</span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="co">#&gt; $ Age                      &lt;int&gt; 32, 51, 33, 31, 31, 50, 50, 33, 27, 5...</span></a>
+<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="co">#&gt; $ Attrition                &lt;fct&gt; No, No, No, Yes, No, No, No, No, No, ...</span></a>
+<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="co">#&gt; $ BusinessTravel           &lt;fct&gt; Travel_Rarely, Travel_Rarely, Travel_...</span></a>
+<a class="sourceLine" id="cb1-15" data-line-number="15"><span class="co">#&gt; $ DailyRate                &lt;int&gt; 234, 684, 867, 1365, 798, 691, 1115, ...</span></a>
+<a class="sourceLine" id="cb1-16" data-line-number="16"><span class="co">#&gt; $ Department               &lt;fct&gt; Sales, Research_Development, Research...</span></a>
+<a class="sourceLine" id="cb1-17" data-line-number="17"><span class="co">#&gt; $ DistanceFromHome         &lt;int&gt; 1, 6, 8, 13, 7, 2, 1, 3, 1, 3, 4, 24,...</span></a>
+<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="co">#&gt; $ Education                &lt;ord&gt; Master, Bachelor, Master, Master, Col...</span></a>
+<a class="sourceLine" id="cb1-19" data-line-number="19"><span class="co">#&gt; $ EducationField           &lt;fct&gt; Medical, Life_Sciences, Life_Sciences...</span></a>
+<a class="sourceLine" id="cb1-20" data-line-number="20"><span class="co">#&gt; $ EnvironmentSatisfaction  &lt;ord&gt; Medium, Low, Very_High, Medium, High,...</span></a>
+<a class="sourceLine" id="cb1-21" data-line-number="21"><span class="co">#&gt; $ Gender                   &lt;fct&gt; Male, Male, Male, Male, Female, Male,...</span></a>
+<a class="sourceLine" id="cb1-22" data-line-number="22"><span class="co">#&gt; $ HourlyRate               &lt;int&gt; 68, 51, 90, 46, 48, 64, 73, 56, 60, 4...</span></a>
+<a class="sourceLine" id="cb1-23" data-line-number="23"><span class="co">#&gt; $ JobInvolvement           &lt;ord&gt; Medium, High, Very_High, High, Medium...</span></a>
+<a class="sourceLine" id="cb1-24" data-line-number="24"><span class="co">#&gt; $ JobLevel                 &lt;int&gt; 1, 5, 1, 2, 3, 4, 5, 1, 2, 4, 5, 2, 2...</span></a>
+<a class="sourceLine" id="cb1-25" data-line-number="25"><span class="co">#&gt; $ JobRole                  &lt;fct&gt; Sales_Representative, Research_Direct...</span></a>
+<a class="sourceLine" id="cb1-26" data-line-number="26"><span class="co">#&gt; $ JobSatisfaction          &lt;ord&gt; Medium, High, Low, Low, High, High, M...</span></a>
+<a class="sourceLine" id="cb1-27" data-line-number="27"><span class="co">#&gt; $ MaritalStatus            &lt;fct&gt; Married, Single, Married, Divorced, M...</span></a>
+<a class="sourceLine" id="cb1-28" data-line-number="28"><span class="co">#&gt; $ MonthlyIncome            &lt;int&gt; 2269, 19537, 3143, 4233, 8943, 17639,...</span></a>
+<a class="sourceLine" id="cb1-29" data-line-number="29"><span class="co">#&gt; $ MonthlyRate              &lt;int&gt; 18024, 6462, 6076, 11512, 14034, 6881...</span></a>
+<a class="sourceLine" id="cb1-30" data-line-number="30"><span class="co">#&gt; $ NumCompaniesWorked       &lt;int&gt; 0, 7, 6, 2, 1, 5, 3, 1, 5, 3, 2, 2, 1...</span></a>
+<a class="sourceLine" id="cb1-31" data-line-number="31"><span class="co">#&gt; $ OverTime                 &lt;fct&gt; No, No, No, No, No, No, Yes, Yes, No,...</span></a>
+<a class="sourceLine" id="cb1-32" data-line-number="32"><span class="co">#&gt; $ PercentSalaryHike        &lt;int&gt; 14, 13, 19, 17, 24, 16, 19, 11, 19, 1...</span></a>
+<a class="sourceLine" id="cb1-33" data-line-number="33"><span class="co">#&gt; $ PerformanceRating        &lt;ord&gt; Excellent, Excellent, Excellent, Exce...</span></a>
+<a class="sourceLine" id="cb1-34" data-line-number="34"><span class="co">#&gt; $ RelationshipSatisfaction &lt;ord&gt; Medium, High, Medium, High, Low, Very...</span></a>
+<a class="sourceLine" id="cb1-35" data-line-number="35"><span class="co">#&gt; $ StockOptionLevel         &lt;int&gt; 1, 0, 1, 0, 1, 0, 0, 0, 1, 3, 1, 0, 0...</span></a>
+<a class="sourceLine" id="cb1-36" data-line-number="36"><span class="co">#&gt; $ TotalWorkingYears        &lt;int&gt; 3, 23, 14, 9, 10, 30, 28, 8, 6, 21, 2...</span></a>
+<a class="sourceLine" id="cb1-37" data-line-number="37"><span class="co">#&gt; $ TrainingTimesLastYear    &lt;int&gt; 2, 5, 1, 2, 2, 3, 1, 3, 1, 5, 2, 3, 2...</span></a>
+<a class="sourceLine" id="cb1-38" data-line-number="38"><span class="co">#&gt; $ WorkLifeBalance          &lt;ord&gt; Better, Better, Better, Bad, Better, ...</span></a>
+<a class="sourceLine" id="cb1-39" data-line-number="39"><span class="co">#&gt; $ YearsAtCompany           &lt;int&gt; 2, 20, 10, 3, 10, 4, 8, 8, 2, 5, 1, 5...</span></a>
+<a class="sourceLine" id="cb1-40" data-line-number="40"><span class="co">#&gt; $ YearsInCurrentRole       &lt;int&gt; 2, 18, 8, 1, 9, 3, 3, 7, 2, 3, 0, 4, ...</span></a>
+<a class="sourceLine" id="cb1-41" data-line-number="41"><span class="co">#&gt; $ YearsSinceLastPromotion  &lt;int&gt; 2, 15, 7, 1, 8, 0, 0, 3, 2, 1, 0, 1, ...</span></a>
+<a class="sourceLine" id="cb1-42" data-line-number="42"><span class="co">#&gt; $ YearsWithCurrManager     &lt;int&gt; 2, 15, 6, 2, 9, 3, 7, 0, 0, 3, 0, 4, ...</span></a></code></pre></div>
+<p>Since we’re using <code>glmnet</code>, we have to start with a bunch of preprocessing. The <code>recipes</code> package makes this sane.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(recipes)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">rec &lt;-<span class="st"> </span><span class="kw">recipe</span>(Attrition <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> attrition) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="st">  </span><span class="kw">step_center</span>(<span class="kw">all_numeric</span>()) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="st">  </span><span class="kw">step_scale</span>(<span class="kw">all_numeric</span>()) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="st">  </span><span class="kw">step_dummy</span>(<span class="kw">all_nominal</span>(), <span class="op">-</span>Attrition) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="st">  </span><span class="kw">prep</span>()</a>
+<a class="sourceLine" id="cb2-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9">rec</a>
+<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="co">#&gt; Data Recipe</span></a>
 <a class="sourceLine" id="cb2-11" data-line-number="11"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt;       role #variables</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt;    outcome          1</span></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="co">#&gt;  predictor         30</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="co">#&gt; Training data contained 500 data points and no missing data.</span></a>
+<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt; Inputs:</span></a>
+<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="co">#&gt;       role #variables</span></a>
+<a class="sourceLine" id="cb2-15" data-line-number="15"><span class="co">#&gt;    outcome          1</span></a>
+<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="co">#&gt;  predictor         30</span></a>
 <a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18"><span class="co">#&gt; Operations:</span></a>
+<a class="sourceLine" id="cb2-18" data-line-number="18"><span class="co">#&gt; Training data contained 500 data points and no missing data.</span></a>
 <a class="sourceLine" id="cb2-19" data-line-number="19"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="co">#&gt; Centering for Age, DailyRate, ... [trained]</span></a>
-<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="co">#&gt; Scaling for Age, DailyRate, ... [trained]</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"><span class="co">#&gt; Dummy variables from BusinessTravel, Department, ... [trained]</span></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24">x &lt;-<span class="st"> </span><span class="kw">juice</span>(rec, <span class="kw">all_predictors</span>(), <span class="dt">composition =</span> <span class="st">"matrix"</span>)</a>
-<a class="sourceLine" id="cb2-25" data-line-number="25">y &lt;-<span class="st"> </span><span class="kw">juice</span>(rec, <span class="kw">all_outcomes</span>())<span class="op">$</span>Attrition</a></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(x)</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">#&gt;             Age   DailyRate DistanceFromHome  HourlyRate   JobLevel</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; [1,] -0.5420737 -1.41458471       -0.9753788  0.05591553 -0.9432286</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; [2,]  1.4718882 -0.30067221       -0.3707552 -0.78529154  2.6161245</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="co">#&gt; [3,] -0.4360758  0.15231887       -0.1289057  1.14453644 -0.9432286</span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt; [4,] -0.6480717  1.38504870        0.4757178 -1.03270538 -0.0533903</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; [5,] -0.6480717 -0.01848105       -0.2498305 -0.93373984  0.8364480</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; [6,]  1.3658902 -0.28334468       -0.8544540 -0.14201555  1.7262862</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt;      MonthlyIncome MonthlyRate NumCompaniesWorked PercentSalaryHike</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10"><span class="co">#&gt; [1,]    -0.8884757  0.52289171         -1.0744000        -0.3547390</span></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11"><span class="co">#&gt; [2,]     2.7297234 -1.06362119          1.6077683        -0.6194697</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12"><span class="co">#&gt; [3,]    -0.7053447 -1.11658728          1.2246014         0.9689141</span></a>
-<a class="sourceLine" id="cb3-13" data-line-number="13"><span class="co">#&gt; [4,]    -0.4769548 -0.37067100         -0.3080662         0.4394528</span></a>
-<a class="sourceLine" id="cb3-14" data-line-number="14"><span class="co">#&gt; [5,]     0.5099410 -0.02460755         -0.6912331         2.2925672</span></a>
-<a class="sourceLine" id="cb3-15" data-line-number="15"><span class="co">#&gt; [6,]     2.3320316 -1.00612691          0.8414345         0.1747222</span></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16"><span class="co">#&gt;      StockOptionLevel TotalWorkingYears TrainingTimesLastYear</span></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17"><span class="co">#&gt; [1,]        0.2747570        -1.0678696            -0.6294487</span></a>
-<a class="sourceLine" id="cb3-18" data-line-number="18"><span class="co">#&gt; [2,]       -0.8894674         1.4991246             1.7134125</span></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19"><span class="co">#&gt; [3,]        0.2747570         0.3439772            -1.4104025</span></a>
-<a class="sourceLine" id="cb3-20" data-line-number="20"><span class="co">#&gt; [4,]       -0.8894674        -0.2977713            -0.6294487</span></a>
-<a class="sourceLine" id="cb3-21" data-line-number="21"><span class="co">#&gt; [5,]        0.2747570        -0.1694216            -0.6294487</span></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22"><span class="co">#&gt; [6,]       -0.8894674         2.3975726             0.1515050</span></a>
-<a class="sourceLine" id="cb3-23" data-line-number="23"><span class="co">#&gt;      YearsAtCompany YearsInCurrentRole YearsSinceLastPromotion</span></a>
-<a class="sourceLine" id="cb3-24" data-line-number="24"><span class="co">#&gt; [1,]     -0.8198000         -0.6173075             -0.03246998</span></a>
-<a class="sourceLine" id="cb3-25" data-line-number="25"><span class="co">#&gt; [2,]      2.1433325          4.0241025              4.18862741</span></a>
-<a class="sourceLine" id="cb3-26" data-line-number="26"><span class="co">#&gt; [3,]      0.4971478          1.1232212              1.59102902</span></a>
-<a class="sourceLine" id="cb3-27" data-line-number="27"><span class="co">#&gt; [4,]     -0.6551815         -0.9073957             -0.35716978</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28"><span class="co">#&gt; [5,]      0.4971478          1.4133094              1.91572882</span></a>
-<a class="sourceLine" id="cb3-29" data-line-number="29"><span class="co">#&gt; [6,]     -0.4905630         -0.3272194             -0.68186958</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30"><span class="co">#&gt;      YearsWithCurrManager BusinessTravel_Travel_Frequently</span></a>
-<a class="sourceLine" id="cb3-31" data-line-number="31"><span class="co">#&gt; [1,]           -0.5861984                                0</span></a>
-<a class="sourceLine" id="cb3-32" data-line-number="32"><span class="co">#&gt; [2,]            3.1203092                                0</span></a>
-<a class="sourceLine" id="cb3-33" data-line-number="33"><span class="co">#&gt; [3,]            0.5542655                                0</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34"><span class="co">#&gt; [4,]           -0.5861984                                0</span></a>
-<a class="sourceLine" id="cb3-35" data-line-number="35"><span class="co">#&gt; [5,]            1.4096134                                1</span></a>
-<a class="sourceLine" id="cb3-36" data-line-number="36"><span class="co">#&gt; [6,]           -0.3010825                                0</span></a>
-<a class="sourceLine" id="cb3-37" data-line-number="37"><span class="co">#&gt;      BusinessTravel_Travel_Rarely Department_Research_Development</span></a>
-<a class="sourceLine" id="cb3-38" data-line-number="38"><span class="co">#&gt; [1,]                            1                               0</span></a>
-<a class="sourceLine" id="cb3-39" data-line-number="39"><span class="co">#&gt; [2,]                            1                               1</span></a>
-<a class="sourceLine" id="cb3-40" data-line-number="40"><span class="co">#&gt; [3,]                            1                               1</span></a>
-<a class="sourceLine" id="cb3-41" data-line-number="41"><span class="co">#&gt; [4,]                            1                               0</span></a>
-<a class="sourceLine" id="cb3-42" data-line-number="42"><span class="co">#&gt; [5,]                            0                               1</span></a>
-<a class="sourceLine" id="cb3-43" data-line-number="43"><span class="co">#&gt; [6,]                            1                               1</span></a>
-<a class="sourceLine" id="cb3-44" data-line-number="44"><span class="co">#&gt;      Department_Sales Education_1 Education_2   Education_3 Education_4</span></a>
-<a class="sourceLine" id="cb3-45" data-line-number="45"><span class="co">#&gt; [1,]                1   0.3162278  -0.2672612 -6.324555e-01  -0.4780914</span></a>
-<a class="sourceLine" id="cb3-46" data-line-number="46"><span class="co">#&gt; [2,]                0   0.0000000  -0.5345225 -4.095972e-16   0.7171372</span></a>
-<a class="sourceLine" id="cb3-47" data-line-number="47"><span class="co">#&gt; [3,]                0   0.3162278  -0.2672612 -6.324555e-01  -0.4780914</span></a>
-<a class="sourceLine" id="cb3-48" data-line-number="48"><span class="co">#&gt; [4,]                1   0.3162278  -0.2672612 -6.324555e-01  -0.4780914</span></a>
-<a class="sourceLine" id="cb3-49" data-line-number="49"><span class="co">#&gt; [5,]                0  -0.3162278  -0.2672612  6.324555e-01  -0.4780914</span></a>
-<a class="sourceLine" id="cb3-50" data-line-number="50"><span class="co">#&gt; [6,]                0   0.0000000  -0.5345225 -4.095972e-16   0.7171372</span></a>
-<a class="sourceLine" id="cb3-51" data-line-number="51"><span class="co">#&gt;      EducationField_Life_Sciences EducationField_Marketing</span></a>
-<a class="sourceLine" id="cb3-52" data-line-number="52"><span class="co">#&gt; [1,]                            0                        0</span></a>
-<a class="sourceLine" id="cb3-53" data-line-number="53"><span class="co">#&gt; [2,]                            1                        0</span></a>
-<a class="sourceLine" id="cb3-54" data-line-number="54"><span class="co">#&gt; [3,]                            1                        0</span></a>
-<a class="sourceLine" id="cb3-55" data-line-number="55"><span class="co">#&gt; [4,]                            0                        0</span></a>
-<a class="sourceLine" id="cb3-56" data-line-number="56"><span class="co">#&gt; [5,]                            1                        0</span></a>
-<a class="sourceLine" id="cb3-57" data-line-number="57"><span class="co">#&gt; [6,]                            0                        0</span></a>
-<a class="sourceLine" id="cb3-58" data-line-number="58"><span class="co">#&gt;      EducationField_Medical EducationField_Other</span></a>
-<a class="sourceLine" id="cb3-59" data-line-number="59"><span class="co">#&gt; [1,]                      1                    0</span></a>
-<a class="sourceLine" id="cb3-60" data-line-number="60"><span class="co">#&gt; [2,]                      0                    0</span></a>
-<a class="sourceLine" id="cb3-61" data-line-number="61"><span class="co">#&gt; [3,]                      0                    0</span></a>
-<a class="sourceLine" id="cb3-62" data-line-number="62"><span class="co">#&gt; [4,]                      1                    0</span></a>
-<a class="sourceLine" id="cb3-63" data-line-number="63"><span class="co">#&gt; [5,]                      0                    0</span></a>
-<a class="sourceLine" id="cb3-64" data-line-number="64"><span class="co">#&gt; [6,]                      1                    0</span></a>
-<a class="sourceLine" id="cb3-65" data-line-number="65"><span class="co">#&gt;      EducationField_Technical_Degree EnvironmentSatisfaction_1</span></a>
-<a class="sourceLine" id="cb3-66" data-line-number="66"><span class="co">#&gt; [1,]                               0                -0.2236068</span></a>
-<a class="sourceLine" id="cb3-67" data-line-number="67"><span class="co">#&gt; [2,]                               0                -0.6708204</span></a>
-<a class="sourceLine" id="cb3-68" data-line-number="68"><span class="co">#&gt; [3,]                               0                 0.6708204</span></a>
-<a class="sourceLine" id="cb3-69" data-line-number="69"><span class="co">#&gt; [4,]                               0                -0.2236068</span></a>
-<a class="sourceLine" id="cb3-70" data-line-number="70"><span class="co">#&gt; [5,]                               0                 0.2236068</span></a>
-<a class="sourceLine" id="cb3-71" data-line-number="71"><span class="co">#&gt; [6,]                               0                 0.2236068</span></a>
-<a class="sourceLine" id="cb3-72" data-line-number="72"><span class="co">#&gt;      EnvironmentSatisfaction_2 EnvironmentSatisfaction_3 Gender_Male</span></a>
-<a class="sourceLine" id="cb3-73" data-line-number="73"><span class="co">#&gt; [1,]                      -0.5                 0.6708204           1</span></a>
-<a class="sourceLine" id="cb3-74" data-line-number="74"><span class="co">#&gt; [2,]                       0.5                -0.2236068           1</span></a>
-<a class="sourceLine" id="cb3-75" data-line-number="75"><span class="co">#&gt; [3,]                       0.5                 0.2236068           1</span></a>
-<a class="sourceLine" id="cb3-76" data-line-number="76"><span class="co">#&gt; [4,]                      -0.5                 0.6708204           1</span></a>
-<a class="sourceLine" id="cb3-77" data-line-number="77"><span class="co">#&gt; [5,]                      -0.5                -0.6708204           0</span></a>
-<a class="sourceLine" id="cb3-78" data-line-number="78"><span class="co">#&gt; [6,]                      -0.5                -0.6708204           1</span></a>
-<a class="sourceLine" id="cb3-79" data-line-number="79"><span class="co">#&gt;      JobInvolvement_1 JobInvolvement_2 JobInvolvement_3</span></a>
-<a class="sourceLine" id="cb3-80" data-line-number="80"><span class="co">#&gt; [1,]       -0.2236068             -0.5        0.6708204</span></a>
-<a class="sourceLine" id="cb3-81" data-line-number="81"><span class="co">#&gt; [2,]        0.2236068             -0.5       -0.6708204</span></a>
-<a class="sourceLine" id="cb3-82" data-line-number="82"><span class="co">#&gt; [3,]        0.6708204              0.5        0.2236068</span></a>
-<a class="sourceLine" id="cb3-83" data-line-number="83"><span class="co">#&gt; [4,]        0.2236068             -0.5       -0.6708204</span></a>
-<a class="sourceLine" id="cb3-84" data-line-number="84"><span class="co">#&gt; [5,]       -0.2236068             -0.5        0.6708204</span></a>
-<a class="sourceLine" id="cb3-85" data-line-number="85"><span class="co">#&gt; [6,]        0.2236068             -0.5       -0.6708204</span></a>
-<a class="sourceLine" id="cb3-86" data-line-number="86"><span class="co">#&gt;      JobRole_Human_Resources JobRole_Laboratory_Technician JobRole_Manager</span></a>
-<a class="sourceLine" id="cb3-87" data-line-number="87"><span class="co">#&gt; [1,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-88" data-line-number="88"><span class="co">#&gt; [2,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-89" data-line-number="89"><span class="co">#&gt; [3,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-90" data-line-number="90"><span class="co">#&gt; [4,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-91" data-line-number="91"><span class="co">#&gt; [5,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-92" data-line-number="92"><span class="co">#&gt; [6,]                       0                             0               0</span></a>
-<a class="sourceLine" id="cb3-93" data-line-number="93"><span class="co">#&gt;      JobRole_Manufacturing_Director JobRole_Research_Director</span></a>
-<a class="sourceLine" id="cb3-94" data-line-number="94"><span class="co">#&gt; [1,]                              0                         0</span></a>
-<a class="sourceLine" id="cb3-95" data-line-number="95"><span class="co">#&gt; [2,]                              0                         1</span></a>
-<a class="sourceLine" id="cb3-96" data-line-number="96"><span class="co">#&gt; [3,]                              0                         0</span></a>
-<a class="sourceLine" id="cb3-97" data-line-number="97"><span class="co">#&gt; [4,]                              0                         0</span></a>
-<a class="sourceLine" id="cb3-98" data-line-number="98"><span class="co">#&gt; [5,]                              1                         0</span></a>
-<a class="sourceLine" id="cb3-99" data-line-number="99"><span class="co">#&gt; [6,]                              0                         1</span></a>
-<a class="sourceLine" id="cb3-100" data-line-number="100"><span class="co">#&gt;      JobRole_Research_Scientist JobRole_Sales_Executive</span></a>
-<a class="sourceLine" id="cb3-101" data-line-number="101"><span class="co">#&gt; [1,]                          0                       0</span></a>
-<a class="sourceLine" id="cb3-102" data-line-number="102"><span class="co">#&gt; [2,]                          0                       0</span></a>
-<a class="sourceLine" id="cb3-103" data-line-number="103"><span class="co">#&gt; [3,]                          1                       0</span></a>
-<a class="sourceLine" id="cb3-104" data-line-number="104"><span class="co">#&gt; [4,]                          0                       1</span></a>
-<a class="sourceLine" id="cb3-105" data-line-number="105"><span class="co">#&gt; [5,]                          0                       0</span></a>
-<a class="sourceLine" id="cb3-106" data-line-number="106"><span class="co">#&gt; [6,]                          0                       0</span></a>
-<a class="sourceLine" id="cb3-107" data-line-number="107"><span class="co">#&gt;      JobRole_Sales_Representative JobSatisfaction_1 JobSatisfaction_2</span></a>
-<a class="sourceLine" id="cb3-108" data-line-number="108"><span class="co">#&gt; [1,]                            1        -0.2236068              -0.5</span></a>
-<a class="sourceLine" id="cb3-109" data-line-number="109"><span class="co">#&gt; [2,]                            0         0.2236068              -0.5</span></a>
-<a class="sourceLine" id="cb3-110" data-line-number="110"><span class="co">#&gt; [3,]                            0        -0.6708204               0.5</span></a>
-<a class="sourceLine" id="cb3-111" data-line-number="111"><span class="co">#&gt; [4,]                            0        -0.6708204               0.5</span></a>
-<a class="sourceLine" id="cb3-112" data-line-number="112"><span class="co">#&gt; [5,]                            0         0.2236068              -0.5</span></a>
-<a class="sourceLine" id="cb3-113" data-line-number="113"><span class="co">#&gt; [6,]                            0         0.2236068              -0.5</span></a>
-<a class="sourceLine" id="cb3-114" data-line-number="114"><span class="co">#&gt;      JobSatisfaction_3 MaritalStatus_Married MaritalStatus_Single</span></a>
-<a class="sourceLine" id="cb3-115" data-line-number="115"><span class="co">#&gt; [1,]         0.6708204                     1                    0</span></a>
-<a class="sourceLine" id="cb3-116" data-line-number="116"><span class="co">#&gt; [2,]        -0.6708204                     0                    1</span></a>
-<a class="sourceLine" id="cb3-117" data-line-number="117"><span class="co">#&gt; [3,]        -0.2236068                     1                    0</span></a>
-<a class="sourceLine" id="cb3-118" data-line-number="118"><span class="co">#&gt; [4,]        -0.2236068                     0                    0</span></a>
-<a class="sourceLine" id="cb3-119" data-line-number="119"><span class="co">#&gt; [5,]        -0.6708204                     1                    0</span></a>
-<a class="sourceLine" id="cb3-120" data-line-number="120"><span class="co">#&gt; [6,]        -0.6708204                     1                    0</span></a>
-<a class="sourceLine" id="cb3-121" data-line-number="121"><span class="co">#&gt;      OverTime_Yes PerformanceRating_1 PerformanceRating_2</span></a>
-<a class="sourceLine" id="cb3-122" data-line-number="122"><span class="co">#&gt; [1,]            0           0.2236068                -0.5</span></a>
-<a class="sourceLine" id="cb3-123" data-line-number="123"><span class="co">#&gt; [2,]            0           0.2236068                -0.5</span></a>
-<a class="sourceLine" id="cb3-124" data-line-number="124"><span class="co">#&gt; [3,]            0           0.2236068                -0.5</span></a>
-<a class="sourceLine" id="cb3-125" data-line-number="125"><span class="co">#&gt; [4,]            0           0.2236068                -0.5</span></a>
-<a class="sourceLine" id="cb3-126" data-line-number="126"><span class="co">#&gt; [5,]            0           0.6708204                 0.5</span></a>
-<a class="sourceLine" id="cb3-127" data-line-number="127"><span class="co">#&gt; [6,]            0           0.2236068                -0.5</span></a>
-<a class="sourceLine" id="cb3-128" data-line-number="128"><span class="co">#&gt;      PerformanceRating_3 RelationshipSatisfaction_1</span></a>
-<a class="sourceLine" id="cb3-129" data-line-number="129"><span class="co">#&gt; [1,]          -0.6708204                 -0.2236068</span></a>
-<a class="sourceLine" id="cb3-130" data-line-number="130"><span class="co">#&gt; [2,]          -0.6708204                  0.2236068</span></a>
-<a class="sourceLine" id="cb3-131" data-line-number="131"><span class="co">#&gt; [3,]          -0.6708204                 -0.2236068</span></a>
-<a class="sourceLine" id="cb3-132" data-line-number="132"><span class="co">#&gt; [4,]          -0.6708204                  0.2236068</span></a>
-<a class="sourceLine" id="cb3-133" data-line-number="133"><span class="co">#&gt; [5,]           0.2236068                 -0.6708204</span></a>
-<a class="sourceLine" id="cb3-134" data-line-number="134"><span class="co">#&gt; [6,]          -0.6708204                  0.6708204</span></a>
-<a class="sourceLine" id="cb3-135" data-line-number="135"><span class="co">#&gt;      RelationshipSatisfaction_2 RelationshipSatisfaction_3</span></a>
-<a class="sourceLine" id="cb3-136" data-line-number="136"><span class="co">#&gt; [1,]                       -0.5                  0.6708204</span></a>
-<a class="sourceLine" id="cb3-137" data-line-number="137"><span class="co">#&gt; [2,]                       -0.5                 -0.6708204</span></a>
-<a class="sourceLine" id="cb3-138" data-line-number="138"><span class="co">#&gt; [3,]                       -0.5                  0.6708204</span></a>
-<a class="sourceLine" id="cb3-139" data-line-number="139"><span class="co">#&gt; [4,]                       -0.5                 -0.6708204</span></a>
-<a class="sourceLine" id="cb3-140" data-line-number="140"><span class="co">#&gt; [5,]                        0.5                 -0.2236068</span></a>
-<a class="sourceLine" id="cb3-141" data-line-number="141"><span class="co">#&gt; [6,]                        0.5                  0.2236068</span></a>
-<a class="sourceLine" id="cb3-142" data-line-number="142"><span class="co">#&gt;      WorkLifeBalance_1 WorkLifeBalance_2 WorkLifeBalance_3</span></a>
-<a class="sourceLine" id="cb3-143" data-line-number="143"><span class="co">#&gt; [1,]         0.2236068              -0.5        -0.6708204</span></a>
-<a class="sourceLine" id="cb3-144" data-line-number="144"><span class="co">#&gt; [2,]         0.2236068              -0.5        -0.6708204</span></a>
-<a class="sourceLine" id="cb3-145" data-line-number="145"><span class="co">#&gt; [3,]         0.2236068              -0.5        -0.6708204</span></a>
-<a class="sourceLine" id="cb3-146" data-line-number="146"><span class="co">#&gt; [4,]        -0.6708204               0.5        -0.2236068</span></a>
-<a class="sourceLine" id="cb3-147" data-line-number="147"><span class="co">#&gt; [5,]         0.2236068              -0.5        -0.6708204</span></a>
-<a class="sourceLine" id="cb3-148" data-line-number="148"><span class="co">#&gt; [6,]         0.2236068              -0.5        -0.6708204</span></a></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(y)</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co">#&gt; [1] No  No  No  Yes No  No </span></a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co">#&gt; Levels: No Yes</span></a></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(glmnet)</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="co">#&gt; Loading required package: Matrix</span></a>
-<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt; Attaching package: 'Matrix'</span></a>
-<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt; The following object is masked from 'package:tidyr':</span></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;     expand</span></a>
-<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt; Loading required package: foreach</span></a>
-<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt; Attaching package: 'foreach'</span></a>
-<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt; The following objects are masked from 'package:purrr':</span></a>
-<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="co">#&gt;     accumulate, when</span></a>
-<a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">#&gt; Loaded glmnet 2.0-16</span></a>
-<a class="sourceLine" id="cb5-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb5-16" data-line-number="16">fit &lt;-<span class="st"> </span><span class="kw">cv.glmnet</span>(x, y, <span class="dt">family =</span> <span class="st">"binomial"</span>)</a>
-<a class="sourceLine" id="cb5-17" data-line-number="17">pred &lt;-<span class="st"> </span><span class="kw"><a href="../reference/safe_predict.html">safe_predict</a></span>(fit, x, <span class="dt">type =</span> <span class="st">"prob"</span>)</a></code></pre></div>
-<p>quick viz</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">x <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="st">  </span><span class="kw">bind_cols</span>(pred) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-4" data-line-number="4"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(DistanceFromHome, .pred_Yes)) <span class="op">+</span></a>
-<a class="sourceLine" id="cb6-5" data-line-number="5"><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span></a>
-<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="st">  </span><span class="kw">theme_bw</span>()</a></code></pre></div>
-<p><img src="bootstrapping_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">boots &lt;-<span class="st"> </span><span class="kw">bootstraps</span>(attrition, <span class="dt">times =</span> <span class="dv">10</span>, <span class="dt">strata =</span> <span class="st">"Attrition"</span>)</a>
-<a class="sourceLine" id="cb7-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">fits &lt;-<span class="st"> </span>boots <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="st">  </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">    <span class="dt">prepped =</span> <span class="kw">map</span>(splits, prepper, rec),</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">    <span class="dt">x_train =</span> <span class="kw">map</span>(prepped, <span class="op">~</span><span class="kw">juice</span>(.x, <span class="kw">all_predictors</span>(), <span class="dt">composition =</span> <span class="st">"matrix"</span>)),</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">    <span class="dt">y_train =</span> <span class="kw">map</span>(prepped, <span class="op">~</span><span class="kw">juice</span>(.x, <span class="kw">all_outcomes</span>())<span class="op">$</span>Attrition),</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8">    <span class="dt">model =</span> <span class="kw">map2</span>(x_train, y_train, cv.glmnet, <span class="dt">family =</span> <span class="st">"binomial"</span>)</a>
-<a class="sourceLine" id="cb7-9" data-line-number="9">  )</a>
-<a class="sourceLine" id="cb7-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb7-11" data-line-number="11">boot_preds &lt;-<span class="st"> </span>fits <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb7-12" data-line-number="12"><span class="st">  </span><span class="kw">mutate</span>(</a>
-<a class="sourceLine" id="cb7-13" data-line-number="13">    <span class="dt">preds =</span> <span class="kw">map</span>(model, safe_predict, x, <span class="dt">type =</span> <span class="st">"prob"</span>),</a>
-<a class="sourceLine" id="cb7-14" data-line-number="14">    <span class="dt">preds =</span> <span class="kw">map</span>(preds, add_id_column)</a>
-<a class="sourceLine" id="cb7-15" data-line-number="15">  ) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb7-16" data-line-number="16"><span class="st">  </span><span class="kw">unnest</span>(preds, <span class="dt">.id =</span> <span class="st">"model"</span>)</a></code></pre></div>
-<p>90 percent confidence interval</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">pred_ci &lt;-<span class="st"> </span>boot_preds <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="st">  </span><span class="kw">group_by</span>(.id) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="st">  </span><span class="kw">summarize</span>(</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">    <span class="dt">.pred_Yes_lower =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/quantile">quantile</a></span>(.pred_Yes, <span class="fl">0.05</span>),</a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">    <span class="dt">.pred_Yes_upper =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/quantile">quantile</a></span>(.pred_Yes, <span class="fl">0.95</span>)</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">  )</a></code></pre></div>
-<p>and if we want to bind those to our original predictions we would o</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">pred_ci <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="st">  </span><span class="kw">bind_cols</span>(pred) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>.pred_No)</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt; # A tibble: 500 x 4</span></a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt;      .id .pred_Yes_lower .pred_Yes_upper .pred_Yes</span></a>
-<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt;    &lt;int&gt;           &lt;dbl&gt;           &lt;dbl&gt;     &lt;dbl&gt;</span></a>
-<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt;  1     1          0.158           0.160     0.160 </span></a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="co">#&gt;  2     2          0.0260          0.0549    0.0261</span></a>
-<a class="sourceLine" id="cb9-9" data-line-number="9"><span class="co">#&gt;  3     3          0.0357          0.0609    0.0359</span></a>
-<a class="sourceLine" id="cb9-10" data-line-number="10"><span class="co">#&gt;  4     4          0.121           0.150     0.149 </span></a>
-<a class="sourceLine" id="cb9-11" data-line-number="11"><span class="co">#&gt;  5     5          0.0585          0.0812    0.0587</span></a>
-<a class="sourceLine" id="cb9-12" data-line-number="12"><span class="co">#&gt;  6     6          0.0335          0.0858    0.0334</span></a>
-<a class="sourceLine" id="cb9-13" data-line-number="13"><span class="co">#&gt;  7     7          0.232           0.244     0.242 </span></a>
-<a class="sourceLine" id="cb9-14" data-line-number="14"><span class="co">#&gt;  8     8          0.134           0.179     0.134 </span></a>
-<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="co">#&gt;  9     9          0.170           0.263     0.262 </span></a>
-<a class="sourceLine" id="cb9-16" data-line-number="16"><span class="co">#&gt; 10    10          0.111           0.191     0.111 </span></a>
-<a class="sourceLine" id="cb9-17" data-line-number="17"><span class="co">#&gt; # ... with 490 more rows</span></a></code></pre></div>
-</div>
-<div id="bootstrapping-for-predictive-intervals" class="section level2">
-<h2 class="hasAnchor">
-<a href="#bootstrapping-for-predictive-intervals" class="anchor"></a>bootstrapping for <em>predictive</em> intervals</h2>
-<p>Let <span class="math inline">\(X\)</span> be the original data (containing both predictors and outcome). Split it into a training set <span class="math inline">\(X_0\)</span> and a test set <span class="math inline">\(X'\)</span>.</p>
-<p><strong>TODO</strong>: totally made up the new steps, need to sanity check everything here</p>
-<ol start="0" style="list-style-type: decimal">
-<li><p><strong>NEW STEP</strong>: calculate residuals <span class="math inline">\(\varepsilon\)</span>. (how to do this for class probabilities?)</p></li>
-<li>Sample the rows of <span class="math inline">\(X_0\)</span> with replacement <span class="math inline">\(1, ..., B\)</span> times to create bootstrapped data sets <span class="math inline">\(X_1^*, ..., X_B^*\)</span>.</li>
-<li>Fit your model of choice on each bootstrapped data set and obtain fits <span class="math inline">\(\hat f_1, ..., \hat f_B\)</span>.</li>
-<li>Predict the mean at <span class="math inline">\(X'\)</span> with each <span class="math inline">\(\hat f_i\)</span> to get samples from the sampling distribution of <span class="math inline">\(f(X')\)</span>.</li>
-<li>
-<strong>NEW STEP</strong>: but was only the mean at <span class="math inline">\(f(X')\)</span> we really want a prediction. so we need to add noise. add a random residual from <span class="math inline">\(\varepsilon\)</span>.</li>
-<li><p>Look at the appropriate quantiles of <span class="math inline">\(f(X')\)</span>. You’re done!</p></li>
-</ol>
-</div>
-<div id="references" class="section level2">
-<h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
-<p><a href="https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20130014367.pdf" class="uri">https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20130014367.pdf</a></p>
-<p><a href="https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval" class="uri">https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval</a></p>
+<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="co">#&gt; Operations:</span></a>
+<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-22" data-line-number="22"><span class="co">#&gt; Centering for Age, DailyRate, ... [trained]</span></a>
+<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="co">#&gt; Scaling for Age, DailyRate, ... [trained]</span></a>
+<a class="sourceLine" id="cb2-24" data-line-number="24"><span class="co">#&gt; Dummy variables from BusinessTravel, Department, ... [trained]</span></a>
+<a class="sourceLine" id="cb2-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb2-26" data-line-number="26">x &lt;-<span class="st"> </span><span class="kw">juice</span>(rec, <span class="kw">all_predictors</span>(), <span class="dt">composition =</span> <span class="st">"matrix"</span>)</a>
+<a class="sourceLine" id="cb2-27" data-line-number="27">y &lt;-<span class="st"> </span><span class="kw">juice</span>(rec, <span class="kw">all_outcomes</span>())<span class="op">$</span>Attrition</a></code></pre></div>
+<p>We can now fit an L1 penalized logistic regression model, and use <code><a href="../reference/safe_predict.html">safe_predict()</a></code> to calculate residuals.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(glmnet)</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(safepredict)</a>
+<a class="sourceLine" id="cb3-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb3-4" data-line-number="4">fit &lt;-<span class="st"> </span><span class="kw">cv.glmnet</span>(x, y, <span class="dt">family =</span> <span class="st">"binomial"</span>)</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5">pred &lt;-<span class="st"> </span><span class="kw"><a href="../reference/safe_predict.html">safe_predict</a></span>(fit, x, <span class="dt">type =</span> <span class="st">"prob"</span>)</a></code></pre></div>
+<p>Let’s take a quick look to sanity check our work. We’ll plot the estimated probability of attrition versus scaled distanced from home.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(ggplot2)</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">x <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="st">  </span><span class="kw">bind_cols</span>(pred) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-6" data-line-number="6"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(DistanceFromHome, .pred_Yes)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-7" data-line-number="7"><span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-8" data-line-number="8"><span class="st">  </span><span class="kw">theme_bw</span>()</a></code></pre></div>
+<p><img src="bootstrapping_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p>This passes the sanity check, we proceed to the bootstrapping.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(purrr)</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(tidyr)</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">boots &lt;-<span class="st"> </span><span class="kw">bootstraps</span>(attrition, <span class="dt">times =</span> <span class="dv">10</span>, <span class="dt">strata =</span> <span class="st">"Attrition"</span>)</a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6">fits &lt;-<span class="st"> </span>boots <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb5-8" data-line-number="8">    <span class="dt">prepped =</span> <span class="kw">map</span>(splits, prepper, rec),</a>
+<a class="sourceLine" id="cb5-9" data-line-number="9">    <span class="dt">x_train =</span> <span class="kw">map</span>(prepped, <span class="op">~</span><span class="kw">juice</span>(.x, <span class="kw">all_predictors</span>(), <span class="dt">composition =</span> <span class="st">"matrix"</span>)),</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">    <span class="dt">y_train =</span> <span class="kw">map</span>(prepped, <span class="op">~</span><span class="kw">juice</span>(.x, <span class="kw">all_outcomes</span>())<span class="op">$</span>Attrition),</a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">    <span class="dt">model =</span> <span class="kw">map2</span>(x_train, y_train, cv.glmnet, <span class="dt">family =</span> <span class="st">"binomial"</span>)</a>
+<a class="sourceLine" id="cb5-12" data-line-number="12">  )</a></code></pre></div>
+<p>Next we get predictions for each bootstrapped fit</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">boot_preds &lt;-<span class="st"> </span>fits <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(</a>
+<a class="sourceLine" id="cb6-3" data-line-number="3">    <span class="dt">preds =</span> <span class="kw">map</span>(model, safe_predict, x, <span class="dt">type =</span> <span class="st">"prob"</span>),</a>
+<a class="sourceLine" id="cb6-4" data-line-number="4">    <span class="dt">preds =</span> <span class="kw">map</span>(preds, add_id_column)</a>
+<a class="sourceLine" id="cb6-5" data-line-number="5">  ) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="st">  </span><span class="kw">unnest</span>(preds, <span class="dt">.id =</span> <span class="st">"model"</span>)</a></code></pre></div>
+<p>and all that remains to calculate a 90 percent confidence interval is to look at the quantiles of the bootstrapped fits:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">pred_ci &lt;-<span class="st"> </span>boot_preds <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="st">  </span><span class="kw">group_by</span>(.id) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="st">  </span><span class="kw">summarize</span>(</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">    <span class="dt">.pred_Yes_lower =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/quantile">quantile</a></span>(.pred_Yes, <span class="fl">0.05</span>),</a>
+<a class="sourceLine" id="cb7-5" data-line-number="5">    <span class="dt">.pred_Yes_upper =</span> <span class="kw"><a href="https://www.rdocumentation.org/packages/stats/topics/quantile">quantile</a></span>(.pred_Yes, <span class="fl">0.95</span>)</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">  ) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb7-7" data-line-number="7"><span class="st">  </span><span class="kw">bind_cols</span>(pred) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb7-8" data-line-number="8"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>.pred_No)</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb7-10" data-line-number="10">pred_ci</a>
+<a class="sourceLine" id="cb7-11" data-line-number="11"><span class="co">#&gt; # A tibble: 500 x 4</span></a>
+<a class="sourceLine" id="cb7-12" data-line-number="12"><span class="co">#&gt;      .id .pred_Yes_lower .pred_Yes_upper .pred_Yes</span></a>
+<a class="sourceLine" id="cb7-13" data-line-number="13"><span class="co">#&gt;    &lt;int&gt;           &lt;dbl&gt;           &lt;dbl&gt;     &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="co">#&gt;  1     1          0.158           0.160     0.160 </span></a>
+<a class="sourceLine" id="cb7-15" data-line-number="15"><span class="co">#&gt;  2     2          0.0260          0.0549    0.0261</span></a>
+<a class="sourceLine" id="cb7-16" data-line-number="16"><span class="co">#&gt;  3     3          0.0357          0.0609    0.0359</span></a>
+<a class="sourceLine" id="cb7-17" data-line-number="17"><span class="co">#&gt;  4     4          0.121           0.150     0.149 </span></a>
+<a class="sourceLine" id="cb7-18" data-line-number="18"><span class="co">#&gt;  5     5          0.0585          0.0812    0.0587</span></a>
+<a class="sourceLine" id="cb7-19" data-line-number="19"><span class="co">#&gt;  6     6          0.0335          0.0858    0.0334</span></a>
+<a class="sourceLine" id="cb7-20" data-line-number="20"><span class="co">#&gt;  7     7          0.232           0.244     0.242 </span></a>
+<a class="sourceLine" id="cb7-21" data-line-number="21"><span class="co">#&gt;  8     8          0.134           0.179     0.134 </span></a>
+<a class="sourceLine" id="cb7-22" data-line-number="22"><span class="co">#&gt;  9     9          0.170           0.263     0.262 </span></a>
+<a class="sourceLine" id="cb7-23" data-line-number="23"><span class="co">#&gt; 10    10          0.111           0.191     0.111 </span></a>
+<a class="sourceLine" id="cb7-24" data-line-number="24"><span class="co">#&gt; # ... with 490 more rows</span></a></code></pre></div>
 </div>
   </div>
 
@@ -468,8 +263,6 @@
 <a href="#tocnav" class="anchor"></a>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
 <li><a href="#bootstrapped-confidence-intervals">Bootstrapped confidence intervals</a></li>
-      <li><a href="#bootstrapping-for-predictive-intervals">bootstrapping for <em>predictive</em> intervals</a></li>
-      <li><a href="#references">References</a></li>
       </ul>
 </div>
       </div>
