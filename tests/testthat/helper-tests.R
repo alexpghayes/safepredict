@@ -82,6 +82,8 @@ check_safepredict_signature <- function(object) {
     )
   }
 
+  # TODO: if you allow type = prob, you must have a threshold arg
+
   # if you have a standard error argument, it must default to FALSE
 
   std_error <- "std_error" %in% args
